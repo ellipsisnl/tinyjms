@@ -1,15 +1,83 @@
 package com.randomcoder.tinyjms.client;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.*;
+
+import com.randomcoder.tinyjms.provider.*;
 
 /**
  * TinyJms implementation of {@link ConnectionFactory}.
  */
 public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory
 {
-	private final AtomicReference<String> clientIDRef = new AtomicReference<String>();
+	/**
+	 * Lock used to gate access to configuration variables.
+	 */
+	private final ReentrantReadWriteLock configLock = new ReentrantReadWriteLock();
+
+	/**
+	 * Currently configured client ID. Must use configLock for access.
+	 */
+	private String clientID;
+	
+	/**
+	 * Currently configured provider. Must use configLock for access.
+	 */
+	private TinyJmsProvider provider;
+	
+	/**
+	 * Currently configured url. Must use configLock for access.
+	 */
+	private String url;
+	
+	/**
+	 * Creates a new JMS connection factory.
+	 * 
+	 * By default, the factory is wired to a local in-memory provider.
+	 * 
+	 * @throws JMSException
+	 *           if the connection factory could not be instantiated
+	 */
+	public TinyJmsConnectionFactory() throws JMSException
+	{
+		this("vm:default");
+	}
+
+	/**
+	 * Creates a new JMS connection factory with the given URL.
+	 * 
+	 * @param url
+	 *          connection URL
+	 * @throws JMSException
+	 *           if the connection factory could not be instantiated
+	 */
+	public TinyJmsConnectionFactory(String url) throws JMSException
+	{
+		setUrl(url);
+	}
+
+	/**
+	 * Sets the connection URL to use for new connections.
+	 * 
+	 * @param url
+	 *          connection URL
+	 * @throws JMSException
+	 *           if the URL is invalid or a provider could not be located
+	 */
+	public void setUrl(String url) throws JMSException
+	{
+		try
+		{
+			configLock.writeLock().lock();
+			this.provider = ProviderRegistry.getProviderForUrl(url);
+			this.url = url;
+		}
+		finally
+		{
+			configLock.writeLock().unlock();
+		}
+	}
 
 	/**
 	 * Sets the Client ID.
@@ -20,18 +88,34 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	 */
 	public void setClientID(String clientID)
 	{
-		this.clientIDRef.set(clientID);
+		try
+		{
+			configLock.writeLock().lock();
+			this.clientID = clientID;
+		}
+		finally
+		{
+			configLock.writeLock().unlock();
+		}
 	}
-	
+
 	public String getClientID()
 	{
-		return clientIDRef.get();
+		try
+		{
+			configLock.readLock().lock();
+			return clientID;
+		}
+		finally
+		{
+			configLock.readLock().unlock();
+		}
 	}
-	
+
 	/*
 	 * ConnectionFactory implementation
 	 */
-	
+
 	/**
 	 * Creates a connection with the default user identity. The connection is
 	 * created in stopped mode. No messages will be delivered until the
@@ -49,7 +133,6 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	@Override
 	public Connection createConnection() throws JMSException, JMSSecurityException
 	{
-		// TODO Auto-generated method stub
 		return new TinyJmsConnection(getClientID());
 	}
 
@@ -74,7 +157,6 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	@Override
 	public Connection createConnection(String userName, String password) throws JMSException, JMSSecurityException
 	{
-		// TODO Auto-generated method stub
 		return new TinyJmsConnection(getClientID());
 	}
 
@@ -121,5 +203,5 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	{
 		return (QueueConnection) createConnection(userName, password);
 	}
-	
+
 }

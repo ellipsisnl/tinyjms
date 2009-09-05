@@ -7,6 +7,8 @@ import javax.jms.IllegalStateException;
 
 import org.junit.*;
 
+import com.randomcoder.tinyjms.provider.vm.VmProvider;
+
 public class TinyJmsConnectionTest
 {
 	private TinyJmsConnection con;
@@ -14,13 +16,17 @@ public class TinyJmsConnectionTest
 	@Before
 	public void setUp() throws Exception
 	{
-		con = (TinyJmsConnection) new TinyJmsConnectionFactory().createConnection();
+		VmProvider.getInstance().removeBroker("test");
+
+		TinyJmsConnectionFactory factory = new TinyJmsConnectionFactory("vm:test");
+		con = (TinyJmsConnection) factory.createConnection();
 	}
 
 	@After
-	public void tearDown()
+	public void tearDown() throws Exception
 	{
 		con = null;
+		VmProvider.getInstance().removeBroker("test");
 	}
 
 	@Test
@@ -29,16 +35,28 @@ public class TinyJmsConnectionTest
 		fail("Not yet implemented");
 	}
 
-	@Test
-	public void testCreateConnectionConsumer()
+	@Test(expected=JMSException.class)
+	public void testCreateConnectionConsumer() throws JMSException
 	{
-		fail("Not yet implemented");
+		con.createConnectionConsumer((Destination) null, null, null, 0);
 	}
 
-	@Test
-	public void testCreateDurableConnectionConsumer()
+	@Test(expected=JMSException.class)
+	public void testCreateConnectionConsumerQueue() throws JMSException
 	{
-		fail("Not yet implemented");
+		con.createConnectionConsumer((Queue) null, null, null, 0);
+	}
+
+	@Test(expected=JMSException.class)
+	public void testCreateConnectionConsumerTopic() throws JMSException
+	{
+		con.createConnectionConsumer((Topic) null, null, null, 0);
+	}
+
+	@Test(expected=JMSException.class)
+	public void testCreateDurableConnectionConsumer() throws JMSException
+	{
+		con.createDurableConnectionConsumer(null, null, null, null, 0);
 	}
 
 	@Test
@@ -74,12 +92,6 @@ public class TinyJmsConnectionTest
 	}
 
 	@Test
-	public void testGetExceptionListener()
-	{
-		fail("Not yet implemented");
-	}
-
-	@Test
 	public void testGetMetaData() throws JMSException
 	{
 		ConnectionMetaData meta = con.getMetaData();
@@ -104,7 +116,16 @@ public class TinyJmsConnectionTest
 	@Test
 	public void testSetExceptionListener()
 	{
-		fail("Not yet implemented");
+		ExceptionListener listener = new ExceptionListener()
+		{
+			@Override
+			public void onException(JMSException exception)
+			{
+			}
+		};
+		
+		con.setExceptionListener(listener);
+		assertSame(listener, con.getExceptionListener());
 	}
 
 	@Test

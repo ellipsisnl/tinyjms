@@ -11,8 +11,10 @@ import javax.jms.IllegalStateException;
 public class TinyJmsConnection implements Connection, QueueConnection, TopicConnection
 {
 	private final ReentrantReadWriteLock clientIDLock = new ReentrantReadWriteLock();	
-
+	private final ReentrantReadWriteLock exceptionListenerLock = new ReentrantReadWriteLock();
+	
 	private String clientID;
+	private ExceptionListener exceptionListener;
 
 	TinyJmsConnection(String clientID)
 	{
@@ -30,20 +32,24 @@ public class TinyJmsConnection implements Connection, QueueConnection, TopicConn
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Unsupported.
+	 */
 	@Override
 	public ConnectionConsumer createConnectionConsumer(Destination destination, String messageSelector, ServerSessionPool sessionPool, int maxMessages)
 			throws JMSException
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		throw new JMSException("Unsupported operation");
 	}
 
+	/**
+	 * Unsupported.
+	 */
 	@Override
 	public ConnectionConsumer createDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool,
 			int maxMessages) throws JMSException
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		throw new JMSException("Unsupported operation");
 	}
 
 	/**
@@ -101,11 +107,28 @@ public class TinyJmsConnection implements Connection, QueueConnection, TopicConn
 		}
 	}
 
+	/**
+	 * Gets the <code>ExceptionListener</code> object for this connection. Not
+	 * every <code>Connection</code> has an <code>ExceptionListener</code>
+	 * associated with it.
+	 * 
+	 * @return the <code>ExceptionListener</code> for this connection, or
+	 *         <code>null</code>, if no <code>ExceptionListener</code> is
+	 *         associated with this connection.
+	 * @see #setExceptionListener(ExceptionListener)
+	 */
 	@Override
-	public ExceptionListener getExceptionListener() throws JMSException
+	public ExceptionListener getExceptionListener()
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		try
+		{
+			exceptionListenerLock.readLock().lock();
+			return exceptionListener;
+		}
+		finally
+		{
+			exceptionListenerLock.readLock().unlock();
+		}
 	}
 
 	@Override
@@ -183,11 +206,47 @@ public class TinyJmsConnection implements Connection, QueueConnection, TopicConn
 		}
 	}
 
+	/**
+	 * Sets an exception listener for this connection.
+	 * 
+	 * <p>
+	 * If a JMS provider detects a serious problem with a connection, it informs
+	 * the connection's <code>ExceptionListener</code>, if one has been
+	 * registered. It does this by calling the listener's <code>onException</code>
+	 * method, passing it a <code>JMSException</code> object describing the
+	 * problem.
+	 * </p>
+	 * 
+	 * <p>
+	 * An exception listener allows a client to be notified of a problem
+	 * asynchronously. Some connections only consume messages, so they would have
+	 * no other way to learn their connection has failed.
+	 * </p>
+	 * 
+	 * <p>
+	 * A connection serializes execution of its <code>ExceptionListener</code>.
+	 * </p>
+	 * 
+	 * <code>
+	 * A JMS provider should attempt to resolve connection problems itself before
+	 * it notifies the client of them.
+	 * </code>
+	 * 
+	 * @param listener
+	 *          the exception listener
+	 */
 	@Override
-	public void setExceptionListener(ExceptionListener listener) throws JMSException
+	public void setExceptionListener(ExceptionListener listener)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		try
+		{
+			exceptionListenerLock.writeLock().lock();
+			this.exceptionListener = listener;
+		}
+		finally
+		{
+			exceptionListenerLock.writeLock().unlock();
+		}
 	}
 
 	@Override
