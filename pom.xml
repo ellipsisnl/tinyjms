@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	                    
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>randomcoder-base</artifactId>
+    <groupId>com.randomcoder</groupId>
+    <version>8</version>
+  </parent>
+  <groupId>com.randomcoder</groupId>
+  <artifactId>randomcoder-tinyjms</artifactId>
+  <packaging>jar</packaging>
+  <name>Randomcoder JMS Implementation</name>
+  <version>1.0-SNAPSHOT</version>
+  <description>Tiny JMS Implementation</description>
+  <url>http://randomcoder.com/maven/site/randomcoder-tinydns/</url>
+  <inceptionYear>2009</inceptionYear>
+  <scm>
+    <connection>scm:svn:http://randomcoder.com/repos/public/randomcoder-tinydns/trunk</connection>
+    <developerConnection>scm:svn:https://randomcoder.com/repos/public/randomcoder-tinydns/trunk</developerConnection>
+    <url>http://randomcoder.com/repos/public/randomcoder-tinydns/trunk</url>
+  </scm>
+  <repositories>
+    <repository>
+      <releases>
+      	<enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>randomcoder-release</id>
+      <name>Randomcoder Release</name>
+      <url>http://randomcoder.com/maven/repository/release</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+      	<enabled>true</enabled>
+      </snapshots>
+      <id>randomcoder-snapshot</id>
+      <name>Randomcoder Snapshot</name>
+      <url>http://randomcoder.com/maven/repository/snapshot</url>
+    </repository>
+  </repositories>  
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.7</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.geronimo.specs</groupId>
+    	<artifactId>geronimo-jms_1.1_spec</artifactId>
+    	<version>1.1.1</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+		</plugins>
+	</build>
+</project>
