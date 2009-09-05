@@ -3,6 +3,7 @@ package com.randomcoder.tinyjms.client;
 import static org.junit.Assert.*;
 
 import javax.jms.*;
+import javax.jms.IllegalStateException;
 
 import org.junit.*;
 
@@ -66,12 +67,12 @@ public class TinyJmsConnectionTest
 		con.createSession(false, Session.SESSION_TRANSACTED);
 	}
 
-	@Test
-	public void testGetClientID()
+	@Test(expected=JMSException.class)
+	public void testCreateSessionInvalid() throws JMSException
 	{
-		fail("Not yet implemented");
+		con.createSession(false, Integer.MAX_VALUE);
 	}
-	
+
 	@Test
 	public void testGetExceptionListener()
 	{
@@ -85,11 +86,19 @@ public class TinyJmsConnectionTest
 	}
 	
 	@Test
-	public void testSetClientID()
+	public void testSetClientID() throws JMSException
 	{
-		fail("Not yet implemented");
+		con.setClientID("CLIENT-ID");
+		assertEquals("CLIENT-ID", con.getClientID());
 	}
-	
+
+	@Test(expected=IllegalStateException.class)
+	public void testSetClientIDAlreadySet() throws JMSException
+	{
+		con.setClientID("CLIENT-ID");
+		con.setClientID("CLIENT-ID-2");
+	}
+
 	@Test
 	public void testSetExceptionListener()
 	{
@@ -107,5 +116,25 @@ public class TinyJmsConnectionTest
 	{
 		fail("Not yet implemented");
 	}
-	
+
+	@Test
+	public void testCreateQueueSession() throws JMSException
+	{
+		QueueSession session = con.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+		assertNotNull(session);
+		assertTrue(session instanceof TinyJmsSession);
+		assertFalse(session.getTransacted());
+		assertEquals(Session.AUTO_ACKNOWLEDGE, session.getAcknowledgeMode());
+	}
+
+	@Test
+	public void testCreateTopicSession() throws JMSException
+	{
+		TopicSession session = con.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+		assertNotNull(session);
+		assertTrue(session instanceof TinyJmsSession);
+		assertFalse(session.getTransacted());
+		assertEquals(Session.AUTO_ACKNOWLEDGE, session.getAcknowledgeMode());
+	}
+
 }

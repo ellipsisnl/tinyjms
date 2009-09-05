@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import javax.jms.*;
 
-public class TinyJmsSession implements Session
+public class TinyJmsSession implements Session, QueueSession, TopicSession
 {
 	private final int acknowledgeMode;
 	
@@ -276,4 +276,47 @@ public class TinyJmsSession implements Session
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public TopicPublisher createPublisher(Topic topic) throws JMSException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal) throws JMSException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public TopicSubscriber createSubscriber(Topic topic) throws JMSException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public QueueReceiver createReceiver(Queue queue, String messageSelector) throws JMSException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public QueueReceiver createReceiver(Queue queue) throws JMSException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public QueueSender createSender(Queue queue) throws JMSException
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}	
+	
 }
