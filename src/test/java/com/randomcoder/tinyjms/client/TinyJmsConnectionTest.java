@@ -10,37 +10,37 @@ import org.junit.*;
 public class TinyJmsConnectionTest
 {
 	private TinyJmsConnection con;
-	
+
 	@Before
 	public void setUp() throws Exception
 	{
 		con = (TinyJmsConnection) new TinyJmsConnectionFactory().createConnection();
 	}
-	
+
 	@After
 	public void tearDown()
 	{
 		con = null;
 	}
-	
+
 	@Test
 	public void testClose()
 	{
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
 	public void testCreateConnectionConsumer()
 	{
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
 	public void testCreateDurableConnectionConsumer()
 	{
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
 	public void testCreateSession() throws JMSException
 	{
@@ -50,7 +50,7 @@ public class TinyJmsConnectionTest
 		assertFalse(session.getTransacted());
 		assertEquals(Session.AUTO_ACKNOWLEDGE, session.getAcknowledgeMode());
 	}
-	
+
 	@Test
 	public void testCreateSessionTransacted() throws JMSException
 	{
@@ -61,13 +61,13 @@ public class TinyJmsConnectionTest
 		assertEquals(Session.SESSION_TRANSACTED, session.getAcknowledgeMode());
 	}
 
-	@Test(expected=JMSException.class)
+	@Test(expected = JMSException.class)
 	public void testCreateSessionConflict() throws JMSException
 	{
 		con.createSession(false, Session.SESSION_TRANSACTED);
 	}
 
-	@Test(expected=JMSException.class)
+	@Test(expected = JMSException.class)
 	public void testCreateSessionInvalid() throws JMSException
 	{
 		con.createSession(false, Integer.MAX_VALUE);
@@ -78,13 +78,15 @@ public class TinyJmsConnectionTest
 	{
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testGetMetaData()
+	public void testGetMetaData() throws JMSException
 	{
-		fail("Not yet implemented");
+		ConnectionMetaData meta = con.getMetaData();
+		assertNotNull(meta);
+		assertTrue(meta instanceof TinyJmsConnectionMetaData);
 	}
-	
+
 	@Test
 	public void testSetClientID() throws JMSException
 	{
@@ -92,7 +94,7 @@ public class TinyJmsConnectionTest
 		assertEquals("CLIENT-ID", con.getClientID());
 	}
 
-	@Test(expected=IllegalStateException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testSetClientIDAlreadySet() throws JMSException
 	{
 		con.setClientID("CLIENT-ID");
@@ -104,13 +106,13 @@ public class TinyJmsConnectionTest
 	{
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
 	public void testStart()
 	{
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
 	public void testStop()
 	{

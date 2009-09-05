@@ -112,7 +112,7 @@ public class TinyJmsConnection implements Connection, QueueConnection, TopicConn
 	public ConnectionMetaData getMetaData() throws JMSException
 	{
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TinyJmsConnectionMetaData();
 	}
 
 	/**
