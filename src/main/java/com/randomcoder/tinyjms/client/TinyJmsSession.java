@@ -6,6 +6,7 @@ import javax.jms.*;
 
 public class TinyJmsSession implements Session, QueueSession, TopicSession
 {
+	private final TinyJmsConnection connection;
 	private final int acknowledgeMode;
 	
 	/**
@@ -29,7 +30,7 @@ public class TinyJmsSession implements Session, QueueSession, TopicSession
 	 * @see Session#CLIENT_ACKNOWLEDGE
 	 * @see Session#DUPS_OK_ACKNOWLEDGE
 	 */
-	TinyJmsSession(boolean transacted, int acknowledgeMode) throws JMSException
+	TinyJmsSession(TinyJmsConnection connection, boolean transacted, int acknowledgeMode) throws JMSException
 	{
 		if (transacted)
 		{
@@ -51,6 +52,7 @@ public class TinyJmsSession implements Session, QueueSession, TopicSession
 		}
 		
 		this.acknowledgeMode = acknowledgeMode;
+		this.connection = connection;
 	}
 	
 	@Override

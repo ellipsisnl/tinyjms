@@ -1,5 +1,6 @@
 package com.randomcoder.tinyjms.client;
 
+import java.net.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.*;
@@ -22,14 +23,19 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	private String clientID;
 	
 	/**
-	 * Currently configured provider. Must use configLock for access.
+	 * Currently configured uri. Must use configLock for access.
 	 */
-	private TinyJmsProvider provider;
+	private URI uri;
 	
 	/**
-	 * Currently configured url. Must use configLock for access.
+	 * Currently configured user name. Must use configLock for access.
 	 */
-	private String url;
+	private String defaultUserName;
+
+	/**
+	 * Currently configured password. Must use configLock for access.
+	 */
+	private String defaultPassword;
 	
 	/**
 	 * Creates a new JMS connection factory.
@@ -41,7 +47,7 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	 */
 	public TinyJmsConnectionFactory() throws JMSException
 	{
-		this("vm:default");
+		this("vm://default");
 	}
 
 	/**
@@ -70,9 +76,27 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 		try
 		{
 			configLock.writeLock().lock();
-			this.provider = ProviderRegistry.getProviderForUrl(url);
-			this.url = url;
+		
+			if (url == null)
+			{
+				throw new InvalidUrlException("URL cannot be null");
+			}
+			
+			URI tempUri;
+			try
+			{
+				tempUri = new URI(url);
+			}
+			catch (URISyntaxException e)
+			{
+				throw new InvalidUrlException("URL is invalid: " + e.getMessage());
+			}
+			
+			ProviderRegistry.getProviderForUri(tempUri); // validate the URI
+			
+			uri = tempUri;
 		}
+		
 		finally
 		{
 			configLock.writeLock().unlock();
@@ -99,6 +123,50 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 		}
 	}
 
+	/**
+	 * Sets the default user name.
+	 * 
+	 * @param userName
+	 *          user name
+	 */
+	public void setUserName(String userName)
+	{
+		try
+		{
+			configLock.writeLock().lock();
+			defaultUserName = userName;
+		}
+		finally
+		{
+			configLock.writeLock().unlock();
+		}
+	}
+
+	/**
+	 * Sets the default password.
+	 * 
+	 * @param password
+	 *          password
+	 */
+	public void setPassword(String password)
+	{
+		try
+		{
+			configLock.writeLock().lock();
+			defaultPassword = password;
+		}
+		finally
+		{
+			configLock.writeLock().unlock();
+		}
+	}
+	
+	/**
+	 * Gets the Client ID.
+	 * 
+	 * @return client ID
+	 * @see #setClientID(String)
+	 */
 	public String getClientID()
 	{
 		try
@@ -133,7 +201,27 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	@Override
 	public Connection createConnection() throws JMSException, JMSSecurityException
 	{
-		return new TinyJmsConnection(getClientID());
+		String currClientID;
+		String currUserName;
+		String currPassword;
+		URI currUri;
+		TinyJmsProvider currProvider;
+		
+		try
+		{
+			configLock.readLock().lock();
+			currClientID = clientID;
+			currUserName = defaultUserName;
+			currPassword = defaultPassword;
+			currUri = uri;
+			currProvider = ProviderRegistry.getProviderForUri(currUri);
+		}
+		finally
+		{
+			configLock.readLock().unlock();
+		}
+		
+		return new TinyJmsConnection(currProvider, currClientID, currUri, currUserName, currPassword);
 	}
 
 	/**
@@ -157,7 +245,23 @@ public class TinyJmsConnectionFactory implements ConnectionFactory, QueueConnect
 	@Override
 	public Connection createConnection(String userName, String password) throws JMSException, JMSSecurityException
 	{
-		return new TinyJmsConnection(getClientID());
+		String currClientID;
+		URI currUri;
+		TinyJmsProvider currProvider;
+		
+		try
+		{
+			configLock.readLock().lock();
+			currClientID = clientID;
+			currUri = uri;
+			currProvider = ProviderRegistry.getProviderForUri(currUri);
+		}
+		finally
+		{
+			configLock.readLock().unlock();
+		}
+		
+		return new TinyJmsConnection(currProvider, currClientID, currUri, userName, password);
 	}
 
 	/*

@@ -1,5 +1,6 @@
 package com.randomcoder.tinyjms.provider;
 
+import java.net.URI;
 import java.util.*;
 
 import com.randomcoder.tinyjms.provider.vm.VmProvider;
@@ -20,24 +21,24 @@ public final class ProviderRegistry
 	{}
 
 	/**
-	 * Retrieves a provider instance from the registry by URL.
+	 * Retrieves a provider instance from the registry by URI.
 	 * 
-	 * @param url
-	 *          URL to provider
+	 * @param uri
+	 *          URI of provider
 	 * @return TinyJms provider
 	 * @throws InvalidUrlException
 	 *           if url is malformed or a provider could not be found
 	 */
-	public static synchronized TinyJmsProvider getProviderForUrl(String url) throws InvalidUrlException
+	public static synchronized TinyJmsProvider getProviderForUri(URI uri) throws InvalidUrlException
 	{
-		return getProviderForScheme(getScheme(url));
+		return getProviderForScheme(getScheme(uri));
 	}
 
 	/**
-	 * Retrieves a provider instance from the registry by URL scheme.
+	 * Retrieves a provider instance from the registry by URI scheme.
 	 * 
 	 * @param scheme
-	 *          URL scheme
+	 *          URI scheme
 	 * @return TinyJms provider
 	 * @throws InvalidUrlException
 	 *           if a provider could not be found
@@ -55,10 +56,10 @@ public final class ProviderRegistry
 	}
 
 	/**
-	 * Registers a new
+	 * Registers a new provider.
 	 * 
 	 * @param scheme
-	 *          URL scheme to register
+	 *          URI scheme to register
 	 * @param provider
 	 *          JmsProvider implementation
 	 * @throws IllegalArgumentException
@@ -71,17 +72,9 @@ public final class ProviderRegistry
 			throw new IllegalArgumentException("Scheme cannot be null");
 		}
 
-		if (scheme.length() == 0)
+		if (scheme.trim().length() == 0)
 		{
 			throw new IllegalArgumentException("Scheme must not be empty");
-		}
-
-		for (char c : scheme.toCharArray())
-		{
-			if (c <= 'a' || c >= 'z')
-			{
-				throw new IllegalArgumentException("Invalid scheme: " + scheme);
-			}
 		}
 
 		if (provider == null)
@@ -89,28 +82,30 @@ public final class ProviderRegistry
 			throw new IllegalArgumentException("Provider cannot be null");
 		}
 
-		providerMap.put(scheme, provider);
+		providerMap.put(scheme.toLowerCase(Locale.US), provider);
 	}
 
+	/**
+	 * Unregisters a provider.
+	 * 
+	 * @param scheme
+	 *          URI scheme
+	 */
 	public static synchronized void unregisterProvider(String scheme)
 	{
-		providerMap.remove(scheme);
+		if (scheme != null)
+		{
+			providerMap.remove(scheme.toLowerCase(Locale.US));
+		}
 	}
 
-	private static String getScheme(String url) throws InvalidUrlException
+	private static String getScheme(URI uri) throws InvalidUrlException
 	{
-		if (url == null)
+		if (uri == null)
 		{
-			throw new InvalidUrlException("Provider URL cannot be null");
+			throw new InvalidUrlException("Provider URI cannot be null");
 		}
 
-		int separatorIndex = url.indexOf(':');
-		if (separatorIndex < 0)
-		{
-			throw new InvalidUrlException("Invalid provider URL: " + url);
-		}
-
-		return url.substring(0, separatorIndex).toLowerCase(Locale.US);
+		return uri.getScheme().toLowerCase(Locale.US);
 	}
-
 }

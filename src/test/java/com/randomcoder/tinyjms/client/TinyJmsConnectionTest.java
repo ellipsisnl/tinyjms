@@ -18,21 +18,22 @@ public class TinyJmsConnectionTest
 	{
 		VmProvider.getInstance().removeBroker("test");
 
-		TinyJmsConnectionFactory factory = new TinyJmsConnectionFactory("vm:test");
+		TinyJmsConnectionFactory factory = new TinyJmsConnectionFactory("vm://test?debug=true&test=false");
 		con = (TinyJmsConnection) factory.createConnection();
 	}
 
 	@After
 	public void tearDown() throws Exception
 	{
+		con.close();
 		con = null;
 		VmProvider.getInstance().removeBroker("test");
 	}
 
 	@Test
-	public void testClose()
+	public void testClose() throws JMSException
 	{
-		fail("Not yet implemented");
+		con.close();
 	}
 
 	@Test(expected=JMSException.class)

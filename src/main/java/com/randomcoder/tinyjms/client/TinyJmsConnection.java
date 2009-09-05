@@ -1,9 +1,12 @@
 package com.randomcoder.tinyjms.client;
 
+import java.net.URI;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.*;
 import javax.jms.IllegalStateException;
+
+import com.randomcoder.tinyjms.provider.*;
 
 /**
  * TinyJms implementation of Connection.
@@ -14,11 +17,18 @@ public class TinyJmsConnection implements Connection, QueueConnection, TopicConn
 	private final ReentrantReadWriteLock exceptionListenerLock = new ReentrantReadWriteLock();
 	
 	private String clientID;
+
+	private final TinyJmsProvider provider;
+	private final TinyJmsConnectionContext context;
+
 	private ExceptionListener exceptionListener;
 
-	TinyJmsConnection(String clientID)
+	TinyJmsConnection(TinyJmsProvider provider, String clientID, URI uri, String userName, String password)
+	throws JMSException
 	{
 		this.clientID = clientID;
+		this.provider = provider;
+		context = provider.connect(uri, userName, password);
 	}
 
 	/*
@@ -28,8 +38,7 @@ public class TinyJmsConnection implements Connection, QueueConnection, TopicConn
 	@Override
 	public void close() throws JMSException
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		provider.close(context);
 	}
 
 	/**
@@ -76,7 +85,7 @@ public class TinyJmsConnection implements Connection, QueueConnection, TopicConn
 	@Override
 	public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException
 	{
-		return new TinyJmsSession(transacted, acknowledgeMode);
+		return new TinyJmsSession(this, transacted, acknowledgeMode);
 	}
 
 	/**
