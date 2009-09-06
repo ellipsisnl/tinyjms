@@ -128,22 +128,41 @@ public class TinyJmsMessageProducerTest
 		fail("Don't know how to validate sending");
 	}
 
-	@Test(expected=JMSException.class)
-	public void testSendDestinationMessage() throws JMSException
+	@Test(expected=UnsupportedOperationException.class)
+	public void testSendMessageWithDestinationUnsupported() throws JMSException
 	{
 		prod.send(queue, message);
 	}
 
 	@Test
-	public void testSendMessageIntIntLong()
+	public void testSendMessageWithDestination() throws JMSException
 	{
-		fail("Not yet implemented");
+		prod.close();
+		prod = (TinyJmsMessageProducer) session.createProducer(null);
+		prod.send(queue, message);
+		fail("Don't know how to validate sending");
 	}
 
 	@Test
-	public void testSendDestinationMessageIntIntLong()
+	public void testSendMessageFull() throws JMSException
 	{
-		fail("Not yet implemented");
+		prod.send(message, DeliveryMode.NON_PERSISTENT, 1, 60000L);
+		fail("Don't know how to validate sending");
 	}
 
+	@Test(expected=UnsupportedOperationException.class)
+	public void testSendMessageWithDestinationFullUnsupported() throws JMSException
+	{
+		prod.send(queue, message, DeliveryMode.NON_PERSISTENT, 1, 60000L);
+	}
+
+	@Test
+	public void testSendMessageWithDestinationFull() throws JMSException
+	{
+		prod.close();
+		prod = (TinyJmsMessageProducer) session.createProducer(null);
+		prod.send(queue, message, DeliveryMode.NON_PERSISTENT, 1, 60000L);
+		fail("Don't know how to validate sending");
+	}
+	
 }
