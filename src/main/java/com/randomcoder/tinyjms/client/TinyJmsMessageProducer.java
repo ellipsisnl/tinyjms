@@ -356,6 +356,7 @@ public class TinyJmsMessageProducer implements MessageProducer
 		try
 		{
 			configLock.writeLock().lock();
+			defaultDeliveryMode = deliveryMode;
 		}
 		finally
 		{

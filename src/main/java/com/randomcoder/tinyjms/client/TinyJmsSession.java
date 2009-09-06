@@ -247,8 +247,7 @@ public class TinyJmsSession implements Session, QueueSession, TopicSession
 	@Override
 	public TextMessage createTextMessage(String text) throws JMSException
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TinyJmsTextMessage(text);
 	}
 
 	/**
