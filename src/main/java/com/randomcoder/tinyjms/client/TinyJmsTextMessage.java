@@ -8,6 +8,7 @@ import javax.jms.*;
 public class TinyJmsTextMessage extends TinyJmsMessage implements TextMessage
 {
 	private String text;
+	private boolean readOnly = false;
 	
 	TinyJmsTextMessage()
 	{
@@ -19,6 +20,17 @@ public class TinyJmsTextMessage extends TinyJmsMessage implements TextMessage
 		this.text = text; 
 	}
 
+	/**
+	 * Sets the read-only flag for this message.
+	 * 
+	 * @param readOnly
+	 *          <code>true</code> if read-only
+	 */
+	void setReadOnly(boolean readOnly)
+	{
+		this.readOnly = readOnly;
+	}
+	
 	/**
 	 * Gets the string containing this message's data. The default value is
 	 * <code>null</code>.
@@ -32,6 +44,14 @@ public class TinyJmsTextMessage extends TinyJmsMessage implements TextMessage
 	public String getText() throws JMSException
 	{
 		return text;
+	}
+
+	@Override
+	public void clearBody() throws JMSException
+	{
+		super.clearBody();
+		text = null;
+		readOnly = false;
 	}
 
 	/**
@@ -49,7 +69,7 @@ public class TinyJmsTextMessage extends TinyJmsMessage implements TextMessage
 	@Override
 	public void setText(String text) throws JMSException
 	{
-		if (super.isReadOnly())
+		if (readOnly)
 			throw new MessageNotWriteableException("Message is read-only");
 		
 		this.text = text;

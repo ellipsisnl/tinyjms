@@ -4,30 +4,11 @@ import java.util.Enumeration;
 
 import javax.jms.*;
 
+import org.apache.log4j.*;
+
 public class TinyJmsMessage implements Message
 {
-	private boolean readOnly = false;
-
-	/**
-	 * Determines if this message is in read-only mode.
-	 * 
-	 * @return <code>true</code> if read-only.
-	 */
-	boolean isReadOnly()
-	{
-		return readOnly;
-	}
-
-	/**
-	 * Sets whether this message is read-only.
-	 * 
-	 * @param readOnly
-	 *          <code>true</code> to make message read-only.
-	 */
-	void setReadOnly(boolean readOnly)
-	{
-		this.readOnly = readOnly;
-	}
+	private static final Logger logger = LogManager.getLogger(TinyJmsMessage.class);
 	
 	@Override
 	public void acknowledge() throws JMSException
@@ -39,9 +20,7 @@ public class TinyJmsMessage implements Message
 	@Override
 	public void clearBody() throws JMSException
 	{
-		// TODO Auto-generated method stub
-		readOnly = false;
-		throw new UnsupportedOperationException();		
+		logger.warn("clearBody() not implemented");
 	}
 
 	@Override

@@ -10,12 +10,32 @@ import javax.jms.*;
 public class TinyJmsObjectMessage extends TinyJmsMessage implements ObjectMessage
 {
 	private byte[] data;
+	private boolean readOnly = false;
 
 	TinyJmsObjectMessage()
 	{
-		
+
 	}
-	
+
+	/**
+	 * Sets the read-only flag for this message.
+	 * 
+	 * @param readOnly
+	 *          <code>true</code> if read-only
+	 */
+	void setReadOnly(boolean readOnly)
+	{
+		this.readOnly = readOnly;
+	}
+
+	@Override
+	public void clearBody() throws JMSException
+	{
+		super.clearBody();
+		data = null;
+		readOnly = false;
+	}
+
 	/**
 	 * Gets the serializable object containing this message's data. The default
 	 * value is <code>null</code>.
@@ -29,33 +49,41 @@ public class TinyJmsObjectMessage extends TinyJmsMessage implements ObjectMessag
 	 */
 	@Override
 	public Serializable getObject() throws JMSException
-	{		
+	{
 		if (data == null)
 		{
 			return null;
 		}
-		
+
 		ByteArrayInputStream bis = null;
 		ObjectInputStream ois = null;
-		
+
 		try
 		{
 			bis = new ByteArrayInputStream(data);
 			ois = new ObjectInputStream(bis);
 			return (Serializable) ois.readObject();
 		}
-		catch (ClassNotFoundException e)
-		{
-			throw new MessageFormatException("Unable to deserialize object: " + e.getMessage());
-		}
-		catch (IOException e)
+		catch (Exception e)
 		{
 			throw new MessageFormatException("Unable to deserialize object: " + e.getMessage());
 		}
 		finally
 		{
-			if (ois != null) try { ois.close(); } catch (Exception ignored) {}
-			if (bis != null) try { ois.close(); } catch (Exception ignored) {}
+			if (ois != null)
+				try
+				{
+					ois.close();
+				}
+				catch (Exception ignored)
+				{}
+			if (bis != null)
+				try
+				{
+					ois.close();
+				}
+				catch (Exception ignored)
+				{}
 		}
 	}
 
@@ -79,15 +107,17 @@ public class TinyJmsObjectMessage extends TinyJmsMessage implements ObjectMessag
 	@Override
 	public void setObject(Serializable object) throws JMSException
 	{
-		if (super.isReadOnly())
+		if (readOnly)
+		{
 			throw new MessageNotWriteableException("Message is read-only");
-
+		}
+		
 		if (object == null)
 		{
 			data = null;
 			return;
 		}
-		
+
 		ByteArrayOutputStream bos = null;
 		ObjectOutputStream oos = null;
 		try
@@ -96,16 +126,28 @@ public class TinyJmsObjectMessage extends TinyJmsMessage implements ObjectMessag
 			oos = new ObjectOutputStream(bos);
 			oos.writeObject(object);
 		}
-		catch (IOException e) 
+		catch (Exception e)
 		{
 			throw new MessageFormatException("Unable to serialize object: " + e.getMessage());
 		}
 		finally
 		{
-			if (oos != null) try { oos.close(); } catch (Exception ignored) {}
-			if (bos != null) try { oos.close(); } catch (Exception ignored) {}
+			if (oos != null)
+				try
+				{
+					oos.close();
+				}
+				catch (Exception ignored)
+				{}
+			if (bos != null)
+				try
+				{
+					oos.close();
+				}
+				catch (Exception ignored)
+				{}
 		}
-		
+
 		this.data = bos.toByteArray();
 	}
 

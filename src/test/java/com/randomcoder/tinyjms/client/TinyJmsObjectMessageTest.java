@@ -62,4 +62,21 @@ public class TinyJmsObjectMessageTest
 		message.getObject();
 	}
 
+	@Test
+	public void testClearBody() throws JMSException
+	{
+		message.setReadOnly(false);
+		message.setObject("TEST");
+		message.clearBody();
+		assertNull(message.getObject());
+	}
+
+	@Test
+	public void testClearBodyReadOnly() throws JMSException
+	{
+		message.setReadOnly(true);
+		message.clearBody();
+		message.setObject("TEST");
+		assertEquals("TEST", message.getObject());
+	}
 }
