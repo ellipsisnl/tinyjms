@@ -5,8 +5,12 @@ import java.util.*;
 
 import javax.jms.*;
 
+import org.apache.log4j.*;
+
 public class TinyJmsMessage implements Message
 {
+	private static final Logger logger = LogManager.getLogger(TinyJmsMessage.class);
+	
 	/* Properties */
 	private final Map<String, Object> properties = new HashMap<String, Object>();
 
@@ -21,8 +25,8 @@ public class TinyJmsMessage implements Message
 	private String type = null;
 	
 	/* Destinations */
-	private TinyJmsDestination destination;
-	private TinyJmsDestination replyTo;
+	private Destination destination;
+	private Destination replyTo;
 	
 	/* State */
 	private boolean propertiesReadOnly = false;
@@ -34,7 +38,7 @@ public class TinyJmsMessage implements Message
 	public void acknowledge() throws JMSException
 	{
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		logger.warn("acknowledge() not implemented");
 	}
 
 	/**
@@ -69,6 +73,7 @@ public class TinyJmsMessage implements Message
 	public void clearProperties() throws JMSException
 	{
 		properties.clear();
+		propertiesReadOnly = false;
 	}
 
 	/**
@@ -1024,18 +1029,7 @@ public class TinyJmsMessage implements Message
 	@Override
 	public void setJMSDestination(Destination destination) throws JMSException
 	{
-		if (destination == null)
-		{
-			this.destination = null;
-		}
-		else if (destination instanceof TinyJmsDestination)
-		{
-			this.destination = (TinyJmsDestination) destination;
-		}
-		else
-		{
-			throw new JMSException("Invalid destination: " + destination.getClass().getName());
-		}
+		this.destination = destination;
 	}
 
 	/**
@@ -1172,18 +1166,7 @@ public class TinyJmsMessage implements Message
 	@Override
 	public void setJMSReplyTo(Destination replyTo) throws JMSException
 	{
-		if (replyTo == null)
-		{
-			this.replyTo = null;
-		}
-		else if (replyTo instanceof TinyJmsDestination)
-		{
-			this.replyTo = (TinyJmsDestination) replyTo;
-		}
-		else
-		{
-			throw new JMSException("Invalid replyTo destination: " + replyTo.getClass().getName());
-		}
+		this.replyTo = replyTo;
 	}
 
 	/**
@@ -1365,6 +1348,17 @@ public class TinyJmsMessage implements Message
 	public void setStringProperty(String name, String value) throws JMSException
 	{
 		setObjectProperty(name, value);
+	}
+
+	/**
+	 * Sets the read-only flag for this message's properties.
+	 * 
+	 * @param value
+	 *          <code>true</code> if properties are read-only
+	 */
+	void setPropertiesReadOnly(boolean value)
+	{
+		this.propertiesReadOnly = value;
 	}
 	
 }
