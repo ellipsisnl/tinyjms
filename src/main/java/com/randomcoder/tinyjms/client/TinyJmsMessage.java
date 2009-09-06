@@ -59,6 +59,31 @@ public class TinyJmsMessage implements Message
 	{}
 
 	/**
+	 * Sets the content of the body as a byte array. Subclasses should override
+	 * this method to provide efficient deserialization of message bodies.
+	 * 
+	 * @param data
+	 *          byte array (may be <code>null</code>) of data to set.
+	 * @throws JMSException
+	 *           if an error occurs
+	 */
+	void setBody(byte[] data) throws JMSException
+	{}
+
+	/**
+	 * Gets the content of the body as a byte array. Subclasses should override
+	 * this method to provide efficient serialization of message bodies.
+	 * 
+	 * @return byte array (may be <code>null</code>)
+	 * @throws JMSException
+	 *           if an error occurs
+	 */
+	byte[] getBody() throws JMSException
+	{
+		return null;
+	}
+	
+	/**
 	 * Clears a message's properties.
 	 * 
 	 * <p>

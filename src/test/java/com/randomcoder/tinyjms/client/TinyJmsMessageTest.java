@@ -26,6 +26,14 @@ public class TinyJmsMessageTest
 	}
 
 	@Test
+	public void testBody() throws JMSException
+	{
+		assertNull(message.getBody());
+		message.setBody(new byte[] { (byte) 0 });
+		assertNull(message.getBody());
+	}
+
+	@Test
 	public void testAcknowledge() throws JMSException
 	{
 		message.acknowledge();
