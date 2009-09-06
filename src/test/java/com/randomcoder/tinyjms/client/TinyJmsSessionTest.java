@@ -2,25 +2,44 @@ package com.randomcoder.tinyjms.client;
 
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
+
+import javax.jms.*;
+
 import org.junit.*;
+
+import com.randomcoder.tinyjms.provider.vm.VmProvider;
 
 public class TinyJmsSessionTest
 {
+	private TinyJmsConnection con;
+	private TinyJmsSession session;
 	
 	@Before
 	public void setUp() throws Exception
 	{
+		VmProvider.getInstance().removeBroker("test");
+
+		TinyJmsConnectionFactory factory = new TinyJmsConnectionFactory("vm://test");
+		con = (TinyJmsConnection) factory.createConnection();		
+		session = (TinyJmsSession) con.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	}
 	
 	@After
 	public void tearDown() throws Exception
 	{
+		session.close();
+		session = null;
+		con.close();
+		con = null;
+		
+		VmProvider.getInstance().removeBroker("test");
 	}
 	
 	@Test
-	public void testClose()
+	public void testClose() throws JMSException
 	{
-		fail("Not yet implemented");
+		session.close();
 	}
 	
 	@Test
@@ -42,9 +61,11 @@ public class TinyJmsSessionTest
 	}
 	
 	@Test
-	public void testCreateBytesMessage()
+	public void testCreateBytesMessage() throws JMSException
 	{
-		fail("Not yet implemented");
+		BytesMessage message = session.createBytesMessage();
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsBytesMessage);
 	}
 	
 	@Test
@@ -78,81 +99,164 @@ public class TinyJmsSessionTest
 	}
 	
 	@Test
-	public void testCreateMapMessage()
+	public void testCreateMapMessage() throws JMSException
 	{
-		fail("Not yet implemented");
+		MapMessage message = session.createMapMessage();
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsMapMessage);
 	}
 	
 	@Test
-	public void testCreateMessage()
+	public void testCreateMessage() throws JMSException
 	{
-		fail("Not yet implemented");
+		Message message = session.createMessage();
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsMessage);
 	}
 	
 	@Test
-	public void testCreateObjectMessage()
+	public void testCreateObjectMessage() throws JMSException
 	{
-		fail("Not yet implemented");
+		ObjectMessage message = session.createObjectMessage();
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsObjectMessage);
+		assertNull(message.getObject());
 	}
 	
 	@Test
-	public void testCreateObjectMessageSerializable()
+	public void testCreateObjectMessageWithData() throws JMSException
 	{
-		fail("Not yet implemented");
+		Serializable obj = new String("TEST");
+		ObjectMessage message = session.createObjectMessage(obj);
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsObjectMessage);
+		assertSame(obj, message.getObject());
 	}
 	
 	@Test
-	public void testCreateProducer()
+	public void testCreateProducer() throws JMSException
 	{
-		fail("Not yet implemented");
+		Queue queue = session.createQueue("TEST-QUEUE");
+		MessageProducer prod = null;
+
+		try
+		{
+			prod = session.createProducer(queue);
+			assertNotNull(prod);
+			assertSame(queue, prod.getDestination());
+		}
+		finally
+		{
+			if (prod != null)
+				prod.close();
+		}
+	}
+
+	@Test
+	public void testCreateProducerNoDestination() throws JMSException
+	{
+		MessageProducer prod = null;
+
+		try
+		{
+			prod = session.createProducer(null);
+			assertNotNull(prod);
+			assertNull(prod.getDestination());
+		}
+		finally
+		{
+			if (prod != null)
+				prod.close();
+		}
+	}
+
+	@Test
+	public void testCreateQueue() throws JMSException
+	{
+		Queue queue = session.createQueue("TEST-QUEUE");
+		assertNotNull(queue);
+		assertTrue(queue instanceof TinyJmsQueue);
+		assertEquals("TEST-QUEUE", queue.getQueueName());
 	}
 	
 	@Test
-	public void testCreateQueue()
+	public void testCreateStreamMessage() throws JMSException
 	{
-		fail("Not yet implemented");
+		StreamMessage message = session.createStreamMessage();
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsStreamMessage);
 	}
 	
 	@Test
-	public void testCreateStreamMessage()
+	public void testCreateTemporaryQueue() throws JMSException
 	{
-		fail("Not yet implemented");
+		TemporaryQueue queue = null;
+		try
+		{
+			queue = session.createTemporaryQueue();
+			assertNotNull(queue);
+			assertTrue(queue instanceof TinyJmsTemporaryQueue);
+			assertNotNull(queue.getQueueName());
+		}
+		finally
+		{
+			if (queue != null)
+				queue.delete();
+		}
 	}
 	
 	@Test
-	public void testCreateTemporaryQueue()
+	public void testCreateTemporaryTopic() throws JMSException
 	{
-		fail("Not yet implemented");
+		TemporaryTopic topic = null;
+		try
+		{
+			topic = session.createTemporaryTopic();
+			assertNotNull(topic);
+			assertTrue(topic instanceof TinyJmsTemporaryTopic);
+			assertNotNull(topic.getTopicName());
+		}
+		finally
+		{
+			if (topic != null)
+				topic.delete();
+		}
 	}
 	
 	@Test
-	public void testCreateTemporaryTopic()
+	public void testCreateTextMessage() throws JMSException
 	{
-		fail("Not yet implemented");
+		TextMessage message = session.createTextMessage();
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsTextMessage);
+		assertNull(message.getText());
 	}
 	
 	@Test
-	public void testCreateTextMessage()
+	public void testCreateTextMessageWithBody() throws JMSException
 	{
-		fail("Not yet implemented");
+		TextMessage message = session.createTextMessage("TEXT");
+		assertNotNull(message);
+		assertTrue(message instanceof TinyJmsTextMessage);
+		assertEquals("TEXT", message.getText());
 	}
 	
 	@Test
-	public void testCreateTextMessageString()
+	public void testCreateTopic() throws JMSException
 	{
-		fail("Not yet implemented");
+		Topic topic = session.createTopic("TOPIC-NAME");
+		assertNotNull(topic);
+		assertTrue(topic instanceof TinyJmsTopic);
+		assertEquals("TOPIC-NAME", topic.getTopicName());
 	}
 	
 	@Test
-	public void testCreateTopic()
+	public void testGetAcknowledgeMode() throws JMSException
 	{
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void testGetAcknowledgeMode()
-	{
-		fail("Not yet implemented");
+		assertEquals(Session.AUTO_ACKNOWLEDGE, session.getAcknowledgeMode());
+		session.close();
+		session = (TinyJmsSession) con.createSession(true, Session.AUTO_ACKNOWLEDGE);
+		assertEquals(Session.SESSION_TRANSACTED, session.getAcknowledgeMode());
 	}
 	
 	@Test
@@ -162,9 +266,12 @@ public class TinyJmsSessionTest
 	}
 	
 	@Test
-	public void testGetTransacted()
+	public void testGetTransacted() throws JMSException
 	{
-		fail("Not yet implemented");
+		assertFalse(session.getTransacted());		
+		session.close();
+		session = (TinyJmsSession) con.createSession(true, Session.SESSION_TRANSACTED);
+		assertTrue(session.getTransacted());
 	}
 	
 	@Test
@@ -182,7 +289,7 @@ public class TinyJmsSessionTest
 	@Test
 	public void testRun()
 	{
-		fail("Not yet implemented");
+		session.run();
 	}
 	
 	@Test

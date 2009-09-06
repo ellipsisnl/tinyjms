@@ -4,8 +4,12 @@ import java.io.Serializable;
 
 import javax.jms.*;
 
+import org.apache.log4j.*;
+
 public class TinyJmsSession implements Session, QueueSession, TopicSession
 {
+	private static final Logger logger = LogManager.getLogger(TinyJmsSession.class);
+	
 	private final TinyJmsConnection connection;
 	private final int acknowledgeMode;
 	
@@ -59,7 +63,7 @@ public class TinyJmsSession implements Session, QueueSession, TopicSession
 	public void close() throws JMSException
 	{
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		logger.warn("close() not implemented yet");
 	}
 	
 	@Override
@@ -152,19 +156,64 @@ public class TinyJmsSession implements Session, QueueSession, TopicSession
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
+	/**
+	 * Creates a <code>MessageProducer</code> to send messages to the specified
+	 * destination.
+	 * 
+	 * <p>
+	 * A client uses a <code>MessageProducer</code> object to send messages to a
+	 * destination. Since <code>Queue</code> and <code>Topic</code> both inherit
+	 * from <code>Destination</code>, they can be used in the destination
+	 * parameter to create a <code>MessageProducer</code> object.
+	 * </p>
+	 * 
+	 * @param destination
+	 *          the <code>Destination</code> to send to, or <code>null</code> if
+	 *          this is a producer which does not have a specified destination.
+	 * 
+	 * @throws JMSException
+	 *           if the session fails to create a MessageProducer due to some
+	 *           internal error.
+	 * @throws InvalidDestinationException
+	 *           if an invalid destination is specified.
+	 * @since JMS 1.1
+	 */
 	@Override
 	public MessageProducer createProducer(Destination destination) throws JMSException
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TinyJmsMessageProducer(destination);
 	}
-	
+
+	/**
+	 * Creates a queue identity given a <code>Queue</code> name.
+	 * 
+	 * <p>
+	 * This facility is provided for the rare cases where clients need to
+	 * dynamically manipulate queue identity. It allows the creation of a queue
+	 * identity with a provider-specific name. Clients that depend on this ability
+	 * are not portable.
+	 * </p>
+	 * 
+	 * <p>
+	 * Note that this method is not for creating the physical queue. The physical
+	 * creation of queues is an administrative task and is not to be initiated by
+	 * the JMS API. The one exception is the creation of temporary queues, which
+	 * is accomplished with the {@link #createTemporaryQueue()} method.
+	 *</p>
+	 * 
+	 * @param queueName
+	 *          the name of this <code>Queue</code>
+	 * @return a <code>Queue</code> with the given name
+	 * @throws JMSException
+	 *           if the session fails to create a queue due to some internal
+	 *           error.
+	 * @since JMS 1.1
+	 */
 	@Override
 	public Queue createQueue(String queueName) throws JMSException
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TinyJmsQueue(queueName);
 	}
 	
 	@Override
@@ -201,12 +250,36 @@ public class TinyJmsSession implements Session, QueueSession, TopicSession
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
+	/**
+	 * Creates a topic identity given a <code>Topic</code> name.
+	 * 
+	 * <p>
+	 * This facility is provided for the rare cases where clients need to
+	 * dynamically manipulate topic identity. This allows the creation of a topic
+	 * identity with a provider-specific name. Clients that depend on this ability
+	 * are not portable.
+	 * </p>
+	 * 
+	 * <p>
+	 * Note that this method is not for creating the physical topic. The physical
+	 * creation of topics is an administrative task and is not to be initiated by
+	 * the JMS API. The one exception is the creation of temporary topics, which
+	 * is accomplished with the {@link #createTemporaryTopic()} method.
+	 * </p>
+	 * 
+	 * @param topicName
+	 *          the name of this <code>Topic</code>
+	 * @return a <code>Topic</code> with the given name
+	 * @throws JMSException
+	 *           if the session fails to create a topic due to some internal
+	 *           error.
+	 * @since JMS 1.1
+	 */
 	@Override
 	public Topic createTopic(String topicName) throws JMSException
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TinyJmsTopic(topicName);
 	}
 	
 	/**
@@ -261,8 +334,7 @@ public class TinyJmsSession implements Session, QueueSession, TopicSession
 	@Override
 	public void run()
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		logger.warn("run() not implemented");
 	}
 	
 	@Override
