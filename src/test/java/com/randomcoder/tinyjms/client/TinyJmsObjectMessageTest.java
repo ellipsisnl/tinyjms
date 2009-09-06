@@ -39,6 +39,17 @@ public class TinyJmsObjectMessageTest
 		assertEquals("TEST", message.getObject());
 	}
 	
+	@Test
+	public void testBody() throws JMSException
+	{
+		message.setObject("TEST");
+		byte[] data = message.getBody();
+		
+		message.setObject("TEST1");
+		message.setBody(data);
+		assertEquals("TEST", message.getObject());
+	}
+	
 	@Test(expected=MessageNotWriteableException.class)
 	public void testReadOnlySerialization() throws JMSException
 	{

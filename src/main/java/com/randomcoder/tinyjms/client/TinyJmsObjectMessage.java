@@ -36,6 +36,18 @@ public class TinyJmsObjectMessage extends TinyJmsMessage implements ObjectMessag
 		readOnly = false;
 	}
 
+	@Override
+	byte[] getBody() throws JMSException
+	{
+		return data;
+	}
+	
+	@Override
+	void setBody(byte[] bodyData) throws JMSException
+	{
+		this.data = bodyData;
+	}
+	
 	/**
 	 * Gets the serializable object containing this message's data. The default
 	 * value is <code>null</code>.

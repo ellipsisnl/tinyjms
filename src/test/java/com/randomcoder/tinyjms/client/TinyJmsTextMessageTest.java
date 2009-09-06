@@ -2,6 +2,8 @@ package com.randomcoder.tinyjms.client;
 
 import static org.junit.Assert.*;
 
+import java.nio.charset.Charset;
+
 import javax.jms.*;
 
 import org.junit.*;
@@ -51,6 +53,14 @@ public class TinyJmsTextMessageTest
 		message.setText("TEST");
 		message.clearBody();
 		assertNull(message.getText());
+	}
+
+	@Test
+	public void testBody() throws JMSException
+	{
+		assertNull(message.getBody());
+		message.setBody("TEST".getBytes(Charset.forName("UTF-8")));
+		assertEquals("TEST", new String(message.getBody(), Charset.forName("UTF-8")));
 	}
 
 	@Test

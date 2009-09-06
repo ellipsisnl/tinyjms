@@ -1,5 +1,7 @@
 package com.randomcoder.tinyjms.client;
 
+import java.nio.charset.Charset;
+
 import javax.jms.*;
 
 /**
@@ -31,6 +33,33 @@ public class TinyJmsTextMessage extends TinyJmsMessage implements TextMessage
 		this.readOnly = readOnly;
 	}
 	
+	
+	@Override
+	byte[] getBody() throws JMSException
+	{
+		try
+		{
+			return (text == null) ? null : text.getBytes(Charset.forName("UTF-8"));
+		}
+		catch (Exception e)
+		{
+			throw new JMSException("Unable to serialize body: " + e.getMessage());
+		}
+	}
+
+	@Override
+	void setBody(byte[] data) throws JMSException
+	{
+		try
+		{
+			text = (data == null) ? null : new String(data, Charset.forName("UTF-8"));
+		}
+		catch (Exception e)
+		{
+			throw new JMSException("Unable to deserialize body: " + e.getMessage());
+		}
+	}
+
 	/**
 	 * Gets the string containing this message's data. The default value is
 	 * <code>null</code>.
