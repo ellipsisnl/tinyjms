@@ -49,7 +49,9 @@ public class TinyJmsTextMessage extends TinyJmsMessage implements TextMessage
 	@Override
 	public void setText(String text) throws JMSException
 	{
-		// TODO verify that message is not in read only mode
+		if (super.isReadOnly())
+			throw new MessageNotWriteableException("Message is read-only");
+		
 		this.text = text;
 	}
 	
