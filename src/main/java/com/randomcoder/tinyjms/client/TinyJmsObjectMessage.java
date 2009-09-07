@@ -39,13 +39,28 @@ public class TinyJmsObjectMessage extends TinyJmsMessage implements ObjectMessag
 	@Override
 	byte[] getBody() throws JMSException
 	{
-		return data;
+		if (data == null)
+		{
+			return null;
+		}
+		
+		byte[] copy = new byte[data.length];
+		System.arraycopy(data, 0, copy, 0, data.length);
+		return copy;
 	}
 	
 	@Override
 	void setBody(byte[] bodyData) throws JMSException
 	{
-		this.data = bodyData;
+		if (bodyData == null)
+		{
+			this.data = null;
+		}
+		else
+		{
+			this.data = new byte[bodyData.length];
+			System.arraycopy(bodyData, 0, this.data, 0, bodyData.length);
+		}
 	}
 	
 	/**

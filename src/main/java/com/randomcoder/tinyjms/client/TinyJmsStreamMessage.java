@@ -4,34 +4,14 @@ import java.io.*;
 
 import javax.jms.*;
 
+import com.randomcoder.tinyjms.protocol.MarshallingSupport;
+import com.randomcoder.tinyjms.protocol.MarshallingSupport.ObjectType;
+
 /**
  * TinyJms implementation of {@link StreamMessage}.
  */
 public class TinyJmsStreamMessage extends TinyJmsMessage implements StreamMessage
 {
-	/**
-	 * Enumeration of supported types.
-	 */
-	public enum ObjectType
-	{
-		NULL, BOOLEAN, BYTE, CHAR, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, BYTE_ARRAY;
-
-		/**
-		 * Gets an enum constant by ordinal.
-		 * 
-		 * @param ordinal
-		 *          ordinal value to lookup
-		 * @return object type, or <code>null</code> if not found
-		 */
-		public static ObjectType getByOrdinal(int ordinal)
-		{
-			if (ordinal < 0 || ordinal >= values().length)
-				return null;
-
-			return values()[ordinal];
-		}
-	}
-
 	private boolean readOnly = false;
 	private DataInputStream dis;
 	private ByteArrayInputStream bis;
@@ -51,14 +31,29 @@ public class TinyJmsStreamMessage extends TinyJmsMessage implements StreamMessag
 	byte[] getBody() throws JMSException
 	{
 		closeStreams();
-		return data;
+		if (data == null)
+		{
+			return null;
+		}
+		
+		byte[] copy = new byte[data.length];
+		System.arraycopy(data, 0, copy, 0, data.length);
+		return copy;
 	}
 
 	@Override
 	void setBody(byte[] data) throws JMSException
 	{
 		closeStreams();
-		this.data = data;
+		if (data == null)
+		{
+			this.data = null;
+		}
+		else
+		{
+			this.data = new byte[data.length];
+			System.arraycopy(data, 0, this.data, 0, data.length);
+		}
 		reset();
 	}
 
@@ -833,141 +828,12 @@ public class TinyJmsStreamMessage extends TinyJmsMessage implements StreamMessag
 
 	private void serializeObject(Object value) throws JMSException
 	{
-		try
-		{
-			if (value == null)
-			{
-				dos.writeByte(ObjectType.NULL.ordinal());
-			}
-			else if (value instanceof Boolean)
-			{
-				dos.writeByte(ObjectType.BOOLEAN.ordinal());
-				dos.writeBoolean((Boolean) value);
-			}
-			else if (value instanceof Byte)
-			{
-				dos.writeByte(ObjectType.BYTE.ordinal());
-				dos.writeByte((Byte) value);
-			}
-			else if (value instanceof Character)
-			{
-				dos.writeByte(ObjectType.CHAR.ordinal());
-				dos.writeChar((Character) value);
-			}
-			else if (value instanceof Short)
-			{
-				dos.writeByte(ObjectType.SHORT.ordinal());
-				dos.writeShort((Short) value);
-			}
-			else if (value instanceof Integer)
-			{
-				dos.writeByte(ObjectType.INT.ordinal());
-				dos.writeInt((Integer) value);
-			}
-			else if (value instanceof Long)
-			{
-				dos.writeByte(ObjectType.LONG.ordinal());
-				dos.writeLong((Long) value);
-			}
-			else if (value instanceof Float)
-			{
-				dos.writeByte(ObjectType.FLOAT.ordinal());
-				dos.writeFloat((Float) value);
-			}
-			else if (value instanceof Double)
-			{
-				dos.writeByte(ObjectType.DOUBLE.ordinal());
-				dos.writeDouble((Double) value);
-			}
-			else if (value instanceof String)
-			{
-				dos.writeByte(ObjectType.STRING.ordinal());
-				dos.writeUTF((String) value);
-			}
-			else if (value instanceof byte[])
-			{
-				dos.writeByte(ObjectType.BYTE_ARRAY.ordinal());
-				dos.writeInt(((byte[]) value).length);
-				dos.write((byte[]) value);
-			}
-			else
-			{
-				throw new MessageFormatException("Invalid type: " + value.getClass().getName());
-			}
-		}
-		catch (EOFException e)
-		{
-			throw new MessageEOFException("End of message: " + e.getMessage());
-		}
-		catch (IOException e)
-		{
-			throw new JMSException("Error reading data: " + e.getMessage());
-		}
+		MarshallingSupport.marshalObject(dos, value);
 	}
 
 	private Object deserializeObject() throws JMSException
 	{
-		try
-		{
-			// read ordinal
-			int ordinal = dis.readByte();
-			ObjectType type = ObjectType.getByOrdinal(ordinal);
-			if (type == null)
-			{
-				throw new MessageFormatException("Invalid type read: " + ordinal);
-			}
-
-			switch (type)
-			{
-				case NULL:
-					return null;
-				case BOOLEAN:
-					return dis.readBoolean();
-				case BYTE:
-					return dis.readByte();
-				case CHAR:
-					return dis.readChar();
-				case SHORT:
-					return dis.readShort();
-				case INT:
-					return dis.readInt();
-				case LONG:
-					return dis.readLong();
-				case FLOAT:
-					return dis.readFloat();
-				case DOUBLE:
-					return dis.readDouble();
-				case STRING:
-					return dis.readUTF();
-				case BYTE_ARRAY:
-					return deserializeBytes();
-				default:
-					throw new JMSException("Unknown data type reeived: " + type);
-			}
-		}
-		catch (EOFException e)
-		{
-			throw new MessageEOFException("End of message: " + e.getMessage());
-		}
-		catch (IOException e)
-		{
-			throw new JMSException("Error reading data: " + e.getMessage());
-		}
-	}
-
-	/**
-	 * Deserializes a byte array.
-	 * 
-	 * @return byte array
-	 * @throws IOException
-	 *           if an error occurs
-	 */
-	private byte[] deserializeBytes() throws IOException
-	{
-		int length = dis.readInt();
-		byte[] buf = new byte[length];
-		dis.readFully(buf);
-		return buf;
+		return MarshallingSupport.unmarshalObject(dis);
 	}
 
 	private void closeStreams()

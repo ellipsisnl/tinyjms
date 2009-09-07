@@ -38,6 +38,12 @@ public class TinyJmsBytesMessageTest
 		assertEquals(0L, message.getBodyLength());
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testGetBodyLengthNotReadable() throws JMSException
+	{
+		message.getBodyLength();
+	}
+	
 	@Test
 	public void testReadWriteBoolean() throws JMSException
 	{
@@ -48,6 +54,19 @@ public class TinyJmsBytesMessageTest
 		assertFalse(message.readBoolean());
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadBooleanNotReadable() throws JMSException
+	{
+		message.readBoolean();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteBooleanNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeBoolean(true);
+	}
+
 	@Test
 	public void testReadWriteByte() throws JMSException
 	{
@@ -56,6 +75,19 @@ public class TinyJmsBytesMessageTest
 		message.reset();
 		assertEquals(Byte.MIN_VALUE, message.readByte());
 		assertEquals(Byte.MAX_VALUE, message.readByte());
+	}
+
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadByteNotReadable() throws JMSException
+	{
+		message.readByte();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteByteNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeByte(Byte.MAX_VALUE);
 	}
 
 	@Test
@@ -73,6 +105,19 @@ public class TinyJmsBytesMessageTest
 		assertEquals(-1, message.readBytes(in));
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadBytesNotReadable() throws JMSException
+	{
+		message.readBytes(new byte[1]);
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteBytesNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeBytes(new byte[] { 1 });
+	}
+
 	@Test
 	public void testReadWriteBytesPartial() throws JMSException
 	{
@@ -87,6 +132,19 @@ public class TinyJmsBytesMessageTest
 		assertEquals(-1, message.readBytes(in, 3));
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadBytesPartialNotReadable() throws JMSException
+	{
+		message.readBytes(new byte[1], 1);
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteBytesPartialNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeBytes(new byte[] { 1, 2 }, 1, 1);
+	}
+
 	@Test
 	public void testReadWriteChar() throws JMSException
 	{
@@ -95,6 +153,19 @@ public class TinyJmsBytesMessageTest
 		message.reset();
 		assertEquals('A', message.readChar());
 		assertEquals('B', message.readChar());
+	}
+
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadCharNotReadable() throws JMSException
+	{
+		message.readChar();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteCharNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeChar('A');
 	}
 
 	@Test
@@ -107,6 +178,19 @@ public class TinyJmsBytesMessageTest
 		assertEquals(Double.MAX_VALUE, message.readDouble(), 0.01d);
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadDoubleNotReadable() throws JMSException
+	{
+		message.readDouble();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteDoubleNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeDouble(1.0d);
+	}
+
 	@Test
 	public void testReadWriteFloat() throws JMSException
 	{
@@ -115,6 +199,19 @@ public class TinyJmsBytesMessageTest
 		message.reset();
 		assertEquals(Float.MIN_VALUE, message.readFloat(), 0.01f);
 		assertEquals(Float.MAX_VALUE, message.readFloat(), 0.01f);
+	}
+
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadFloatNotReadable() throws JMSException
+	{
+		message.readFloat();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteFloatNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeFloat(1.0f);
 	}
 
 	@Test
@@ -127,6 +224,19 @@ public class TinyJmsBytesMessageTest
 		assertEquals(Integer.MAX_VALUE, message.readInt());
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadIntNotReadable() throws JMSException
+	{
+		message.readInt();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteIntNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeInt(1);
+	}
+
 	@Test
 	public void testReadWriteLong() throws JMSException
 	{
@@ -137,6 +247,19 @@ public class TinyJmsBytesMessageTest
 		assertEquals(Long.MAX_VALUE, message.readLong());
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadLongNotReadable() throws JMSException
+	{
+		message.readLong();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteLongNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeLong(1L);
+	}
+	
 	@Test
 	public void testReadWriteShort() throws JMSException
 	{
@@ -147,12 +270,38 @@ public class TinyJmsBytesMessageTest
 		assertEquals(Short.MAX_VALUE, message.readShort());
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadShortNotReadable() throws JMSException
+	{
+		message.readShort();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteShortNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeShort((short) 1);
+	}
+
 	@Test
 	public void testReadWriteUTF() throws JMSException
 	{
 		message.writeUTF("Test");
 		message.reset();
 		assertEquals("Test", message.readUTF());
+	}
+
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadUTFNotReadable() throws JMSException
+	{
+		message.readUTF();
+	}
+
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteUTFNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeUTF("test");
 	}
 
 	@Test
@@ -163,6 +312,12 @@ public class TinyJmsBytesMessageTest
 		assertEquals(255, message.readUnsignedByte());
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadUnsignedByteNotReadable() throws JMSException
+	{
+		message.readUnsignedByte();
+	}
+
 	@Test
 	public void testReadUnsignedShort() throws JMSException
 	{
@@ -171,6 +326,12 @@ public class TinyJmsBytesMessageTest
 		assertEquals(65535, message.readUnsignedShort());
 	}
 
+	@Test(expected=MessageNotReadableException.class)
+	public void testReadUnsignedShortNotReadable() throws JMSException
+	{
+		message.readUnsignedShort();
+	}
+	
 	@Test
 	public void testClearBody() throws JMSException
 	{
@@ -215,6 +376,13 @@ public class TinyJmsBytesMessageTest
 		assertEquals("TEST", message.readUTF());
 	}
 	
+	@Test(expected=MessageNotWriteableException.class)
+	public void testWriteObjectNotReadable() throws JMSException
+	{
+		message.reset();
+		message.writeObject(null);
+	}
+
 	@Test(expected=NullPointerException.class)
 	public void testWriteObjectNull() throws JMSException
 	{

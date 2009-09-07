@@ -26,7 +26,14 @@ public class TinyJmsBytesMessage extends TinyJmsMessage implements BytesMessage
 	byte[] getBody() throws JMSException
 	{
 		closeStreams();
-		return data;
+		if (data == null)
+		{
+			return null;
+		}
+		
+		byte[] copy = new byte[data.length];
+		System.arraycopy(data, 0, copy, 0, data.length);
+		return copy;
 	}
 
 
@@ -34,7 +41,15 @@ public class TinyJmsBytesMessage extends TinyJmsMessage implements BytesMessage
 	void setBody(byte[] data) throws JMSException
 	{
 		closeStreams();
-		this.data = data;
+		if (data == null)
+		{
+			this.data = null;
+		}
+		else
+		{
+			this.data = new byte[data.length];
+			System.arraycopy(data, 0, this.data, 0, data.length);
+		}
 		reset();
 	}
 
