@@ -117,17 +117,18 @@ public class TinyJmsMessage implements Message
 	public boolean getBooleanProperty(String name) throws JMSException
 	{
 		Object value = properties.get(name);
+
+		if (value == null || value instanceof String)
+		{
+			return Boolean.valueOf((String) value);
+		}
+
 		if (value instanceof Boolean)
 		{
 			return (Boolean) value;
 		}
 		
-		if (value instanceof String)
-		{
-			return Boolean.valueOf((String) value);
-		}
-
-		throw new MessageFormatException("Property is not a boolean");
+		throw new MessageFormatException("Unsupported conversion to boolean from type: " + value.getClass().getName());
 	}
 
 	/**
@@ -151,12 +152,12 @@ public class TinyJmsMessage implements Message
 			return (Byte) value;
 		}
 		
-		if (value instanceof String)
+		if (value == null || value instanceof String)
 		{
 			return Byte.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Property is not a byte");
+		throw new MessageFormatException("Unsupported conversion to byte from type: " + value.getClass().getName());
 	}
 
 	/**
@@ -185,12 +186,12 @@ public class TinyJmsMessage implements Message
 			return (Float) value;
 		}
 		
-		if (value instanceof String)
+		if (value == null || value instanceof String)
 		{
 			return Double.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Property is not a double");
+		throw new MessageFormatException("Unsupported conversion to double from type: " + value.getClass().getName());
 	}
 
 	/**
@@ -215,12 +216,12 @@ public class TinyJmsMessage implements Message
 			return (Float) value;
 		}
 		
-		if (value instanceof String)
+		if (value == null || value instanceof String)
 		{
 			return Float.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Property is not a float");
+		throw new MessageFormatException("Unsupported conversion to float from type: " + value.getClass().getName());
 	}
 
 	/**
@@ -255,12 +256,12 @@ public class TinyJmsMessage implements Message
 			return (Byte) value;
 		}
 
-		if (value instanceof String)
+		if (value == null || value instanceof String)
 		{
 			return Integer.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Property is not an int");
+		throw new MessageFormatException("Unsupported conversion to int from type: " + value.getClass().getName());
 	}
 
 	/**
@@ -601,12 +602,12 @@ public class TinyJmsMessage implements Message
 			return (Byte) value;
 		}
 
-		if (value instanceof String)
+		if (value == null || value instanceof String)
 		{
 			return Long.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Property is not a long");
+		throw new MessageFormatException("Unsupported conversion to long from type: " + value.getClass().getName());
 	}
 
 	/**
@@ -728,12 +729,12 @@ public class TinyJmsMessage implements Message
 			return (Byte) value;
 		}
 
-		if (value instanceof String)
+		if (value == null || value instanceof String)
 		{
 			return Short.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Property is not a short");
+		throw new MessageFormatException("Unsupported conversion to short from type: " + value.getClass().getName());
 	}
 
 	/**
@@ -800,7 +801,7 @@ public class TinyJmsMessage implements Message
 			return Boolean.toString((Boolean) value);
 		}
 		
-		throw new MessageFormatException("Property is not a String");
+		throw new MessageFormatException("Unsupported conversion to String from type: " + value.getClass().getName());
 	}
 
 	/**

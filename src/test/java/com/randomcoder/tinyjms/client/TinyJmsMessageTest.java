@@ -74,11 +74,11 @@ public class TinyJmsMessageTest
 		assertTrue(message.getBooleanProperty("test2"));
 	}
 
-	@Test(expected=MessageFormatException.class)
+	@Test
 	public void testBooleanPropertyNull() throws JMSException
 	{
 		message.setStringProperty("test", null);
-		message.getBooleanProperty("test");
+		assertFalse(message.getBooleanProperty("test"));
 	}
 
 	@Test(expected=MessageNotWriteableException.class)
@@ -101,7 +101,7 @@ public class TinyJmsMessageTest
 		assertEquals((byte) -128, message.getByteProperty("test3"));
 	}
 
-	@Test(expected=MessageFormatException.class)
+	@Test(expected=NumberFormatException.class)
 	public void testBytePropertyNull() throws JMSException
 	{
 		message.setStringProperty("test", null);
@@ -128,7 +128,7 @@ public class TinyJmsMessageTest
 		assertEquals(123.45d, message.getDoubleProperty("test3"), 0.01d);
 	}
 
-	@Test(expected=MessageFormatException.class)
+	@Test(expected=NullPointerException.class)
 	public void testDoublePropertyNull() throws JMSException
 	{
 		message.setStringProperty("test", null);
@@ -152,7 +152,7 @@ public class TinyJmsMessageTest
 		assertEquals(123.45f, message.getFloatProperty("test3"), 0.01f);
 	}
 
-	@Test(expected=MessageFormatException.class)
+	@Test(expected=NullPointerException.class)
 	public void testFloatPropertyNull() throws JMSException
 	{
 		message.setStringProperty("test", null);
@@ -318,7 +318,7 @@ public class TinyJmsMessageTest
 		assertEquals(123L, message.getLongProperty("test5"));
 	}
 
-	@Test(expected=MessageFormatException.class)
+	@Test(expected=NumberFormatException.class)
 	public void testLongPropertyNull() throws JMSException
 	{
 		message.setStringProperty("test", null);
@@ -348,7 +348,7 @@ public class TinyJmsMessageTest
 		assertEquals(123, message.getIntProperty("test4"));
 	}
 
-	@Test(expected=MessageFormatException.class)
+	@Test(expected=NumberFormatException.class)
 	public void testIntPropertyNull() throws JMSException
 	{
 		message.setStringProperty("test", null);
@@ -467,7 +467,7 @@ public class TinyJmsMessageTest
 		assertEquals((short) 123, message.getShortProperty("test3"));
 	}
 
-	@Test(expected=MessageFormatException.class)
+	@Test(expected=NumberFormatException.class)
 	public void testShortPropertyNull() throws JMSException
 	{
 		message.setStringProperty("test", null);
