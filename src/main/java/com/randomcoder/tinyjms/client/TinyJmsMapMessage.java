@@ -4,6 +4,9 @@ import java.util.Enumeration;
 
 import javax.jms.*;
 
+/**
+ * TinyJms implementation of {@link MapMessage}.
+ */
 public class TinyJmsMapMessage extends TinyJmsMessage implements MapMessage
 {
 	@Override
