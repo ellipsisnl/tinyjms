@@ -4,6 +4,9 @@ import java.io.*;
 
 import javax.jms.*;
 
+/**
+ * TinyJms implementation of {@link BytesMessage}.
+ */
 public class TinyJmsBytesMessage extends TinyJmsMessage implements BytesMessage
 {
 	private boolean readOnly = false;
