@@ -12,12 +12,12 @@
   <name>Randomcoder JMS Implementation</name>
   <version>1.0-SNAPSHOT</version>
   <description>Tiny JMS Implementation</description>
-  <url>http://randomcoder.org/maven/site/randomcoder-tinydns/</url>
+  <url>http://randomcoder.org/maven/site/randomcoder-tinyjms/</url>
   <inceptionYear>2009</inceptionYear>
   <scm>
-    <connection>scm:svn:http://randomcoder.org/repos/public/randomcoder-tinydns/trunk</connection>
-    <developerConnection>scm:svn:https://randomcoder.org/repos/public/randomcoder-tinydns/trunk</developerConnection>
-    <url>http://randomcoder.org/repos/public/randomcoder-tinydns/trunk</url>
+    <connection>scm:svn:http://randomcoder.org/repos/public/randomcoder-tinyjms/trunk</connection>
+    <developerConnection>scm:svn:https://randomcoder.org/repos/public/randomcoder-tinyjms/trunk</developerConnection>
+    <url>http://randomcoder.org/repos/public/randomcoder-tinyjms/trunk</url>
   </scm>
   <repositories>
     <repository>
