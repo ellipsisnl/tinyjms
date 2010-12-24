@@ -12,12 +12,12 @@
   <name>Randomcoder JMS Implementation</name>
   <version>1.0-SNAPSHOT</version>
   <description>Tiny JMS Implementation</description>
-  <url>http://randomcoder.com/maven/site/randomcoder-tinydns/</url>
+  <url>http://randomcoder.org/maven/site/randomcoder-tinydns/</url>
   <inceptionYear>2009</inceptionYear>
   <scm>
-    <connection>scm:svn:http://randomcoder.com/repos/public/randomcoder-tinydns/trunk</connection>
-    <developerConnection>scm:svn:https://randomcoder.com/repos/public/randomcoder-tinydns/trunk</developerConnection>
-    <url>http://randomcoder.com/repos/public/randomcoder-tinydns/trunk</url>
+    <connection>scm:svn:http://randomcoder.org/repos/public/randomcoder-tinydns/trunk</connection>
+    <developerConnection>scm:svn:https://randomcoder.org/repos/public/randomcoder-tinydns/trunk</developerConnection>
+    <url>http://randomcoder.org/repos/public/randomcoder-tinydns/trunk</url>
   </scm>
   <repositories>
     <repository>
@@ -29,7 +29,7 @@
       </snapshots>
       <id>randomcoder-release</id>
       <name>Randomcoder Release</name>
-      <url>http://randomcoder.com/maven/repository/release</url>
+      <url>http://randomcoder.org/maven/repository/release</url>
     </repository>
     <repository>
       <releases>
@@ -40,7 +40,7 @@
       </snapshots>
       <id>randomcoder-snapshot</id>
       <name>Randomcoder Snapshot</name>
-      <url>http://randomcoder.com/maven/repository/snapshot</url>
+      <url>http://randomcoder.org/maven/repository/snapshot</url>
     </repository>
   </repositories>  
   <dependencies>
