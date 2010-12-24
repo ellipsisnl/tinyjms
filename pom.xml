@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>randomcoder-base</artifactId>
-    <groupId>com.randomcoder</groupId>
-    <version>8</version>
+    <groupId>org.randomcoder</groupId>
+    <version>11</version>
   </parent>
   <groupId>com.randomcoder</groupId>
   <artifactId>randomcoder-tinyjms</artifactId>
