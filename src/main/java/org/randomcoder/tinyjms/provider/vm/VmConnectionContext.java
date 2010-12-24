@@ -1,8 +1,8 @@
-package com.randomcoder.tinyjms.provider.vm;
+package org.randomcoder.tinyjms.provider.vm;
 
 import java.util.UUID;
 
-import com.randomcoder.tinyjms.provider.TinyJmsConnectionContext;
+import org.randomcoder.tinyjms.provider.TinyJmsConnectionContext;
 
 public class VmConnectionContext implements TinyJmsConnectionContext
 {

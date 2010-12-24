@@ -1,11 +1,11 @@
-package com.randomcoder.tinyjms.client;
+package org.randomcoder.tinyjms.client;
 
 import java.io.*;
 import java.util.*;
 
 import javax.jms.*;
 
-import com.randomcoder.tinyjms.protocol.MarshallingSupport;
+import org.randomcoder.tinyjms.protocol.MarshallingSupport;
 
 /**
  * TinyJms implementation of {@link MapMessage}.

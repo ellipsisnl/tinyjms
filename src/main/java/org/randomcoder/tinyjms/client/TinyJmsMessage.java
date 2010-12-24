@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.client;
+package org.randomcoder.tinyjms.client;
 
 import java.nio.charset.Charset;
 import java.util.*;

@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.client;
+package org.randomcoder.tinyjms.client;
 
 import java.io.Serializable;
 import java.util.*;

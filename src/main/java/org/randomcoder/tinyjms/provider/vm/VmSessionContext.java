@@ -1,6 +1,6 @@
-package com.randomcoder.tinyjms.provider.vm;
+package org.randomcoder.tinyjms.provider.vm;
 
-import com.randomcoder.tinyjms.provider.TinyJmsSessionContext;
+import org.randomcoder.tinyjms.provider.TinyJmsSessionContext;
 
 public class VmSessionContext implements TinyJmsSessionContext
 {

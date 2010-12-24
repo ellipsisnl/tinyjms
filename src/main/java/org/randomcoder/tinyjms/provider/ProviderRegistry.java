@@ -1,9 +1,9 @@
-package com.randomcoder.tinyjms.provider;
+package org.randomcoder.tinyjms.provider;
 
 import java.net.URI;
 import java.util.*;
 
-import com.randomcoder.tinyjms.provider.vm.VmProvider;
+import org.randomcoder.tinyjms.provider.vm.VmProvider;
 
 /**
  * Registry of TinyJms providers.

@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.provider;
+package org.randomcoder.tinyjms.provider;
 
 public interface TinyJmsSessionContext
 {

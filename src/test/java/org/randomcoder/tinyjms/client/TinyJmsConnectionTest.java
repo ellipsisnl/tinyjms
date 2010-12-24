@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.client;
+package org.randomcoder.tinyjms.client;
 
 import static org.junit.Assert.*;
 
@@ -7,7 +7,7 @@ import javax.jms.IllegalStateException;
 
 import org.junit.*;
 
-import com.randomcoder.tinyjms.provider.vm.VmProvider;
+import org.randomcoder.tinyjms.provider.vm.VmProvider;
 
 public class TinyJmsConnectionTest
 {

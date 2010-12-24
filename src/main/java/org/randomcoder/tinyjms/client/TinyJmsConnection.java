@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.client;
+package org.randomcoder.tinyjms.client;
 
 import java.net.URI;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.jms.*;
 import javax.jms.IllegalStateException;
 
-import com.randomcoder.tinyjms.provider.*;
+import org.randomcoder.tinyjms.provider.*;
 
 /**
  * TinyJms implementation of Connection.

@@ -6,7 +6,7 @@
     <groupId>org.randomcoder</groupId>
     <version>11</version>
   </parent>
-  <groupId>com.randomcoder</groupId>
+  <groupId>org.randomcoder</groupId>
   <artifactId>randomcoder-tinyjms</artifactId>
   <packaging>jar</packaging>
   <name>Randomcoder JMS Implementation</name>

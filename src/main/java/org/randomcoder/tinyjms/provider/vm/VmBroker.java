@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.provider.vm;
+package org.randomcoder.tinyjms.provider.vm;
 
 import java.util.UUID;
 

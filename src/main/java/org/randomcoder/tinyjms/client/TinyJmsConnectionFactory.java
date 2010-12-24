@@ -1,11 +1,11 @@
-package com.randomcoder.tinyjms.client;
+package org.randomcoder.tinyjms.client;
 
 import java.net.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.*;
 
-import com.randomcoder.tinyjms.provider.*;
+import org.randomcoder.tinyjms.provider.*;
 
 /**
  * TinyJms implementation of {@link ConnectionFactory}.

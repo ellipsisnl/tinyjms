@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.protocol;
+package org.randomcoder.tinyjms.protocol;
 
 import java.io.*;
 import java.util.Map;

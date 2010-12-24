@@ -1,4 +1,4 @@
-package com.randomcoder.tinyjms.provider.vm;
+package org.randomcoder.tinyjms.provider.vm;
 
 import java.net.*;
 import java.util.*;
@@ -8,7 +8,7 @@ import javax.jms.JMSException;
 
 import org.apache.log4j.*;
 
-import com.randomcoder.tinyjms.provider.*;
+import org.randomcoder.tinyjms.provider.*;
 
 /**
  * In-memory provider.
