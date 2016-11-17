@@ -3,8 +3,7 @@ package org.randomcoder.tinyjms.client;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.*;
-
-import org.apache.log4j.*;
+import org.apache.logging.log4j.*;
 
 /**
  * TinyJms implementation of {@link MessageProducer}.

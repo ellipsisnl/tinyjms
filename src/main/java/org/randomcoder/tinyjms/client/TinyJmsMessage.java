@@ -4,8 +4,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 import javax.jms.*;
-
-import org.apache.log4j.*;
+import org.apache.logging.log4j.*;
 
 public class TinyJmsMessage implements Message
 {

@@ -1,8 +1,7 @@
 package org.randomcoder.tinyjms.client;
 
 import javax.jms.*;
-
-import org.apache.log4j.*;
+import org.apache.logging.log4j.*;
 
 public class TinyJmsTemporaryTopic extends TinyJmsTopic implements TemporaryTopic
 {

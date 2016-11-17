@@ -5,5 +5,9 @@
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry kind="lib" path="D:/Workspaces/EclipseMars/tinyjms2/lib/jms-api-1.1-rev-1.jar"/>
+	<classpathentry kind="lib" path="D:/Workspaces/EclipseMars/tinyjms2/lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="D:/Workspaces/EclipseMars/tinyjms2/lib/log4j-api-2.7.jar"/>
+	<classpathentry kind="lib" path="D:/Workspaces/EclipseMars/tinyjms2/lib/log4j-core-2.7.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

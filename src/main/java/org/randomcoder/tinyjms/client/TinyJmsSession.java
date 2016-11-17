@@ -3,8 +3,7 @@ package org.randomcoder.tinyjms.client;
 import java.io.Serializable;
 
 import javax.jms.*;
-
-import org.apache.log4j.*;
+import org.apache.logging.log4j.*;
 
 public class TinyJmsSession implements Session, QueueSession, TopicSession
 {

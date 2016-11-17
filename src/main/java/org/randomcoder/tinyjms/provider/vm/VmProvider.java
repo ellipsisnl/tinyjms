@@ -5,8 +5,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.jms.JMSException;
-
-import org.apache.log4j.*;
+import org.apache.logging.log4j.*;
 
 import org.randomcoder.tinyjms.provider.*;
 
