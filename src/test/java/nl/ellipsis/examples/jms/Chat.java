@@ -1,7 +1,9 @@
 package nl.ellipsis.examples.jms;
 
 import javax.jms.*;
-import nl.ellipsis.tinyjms.client.TinyJmsConnectionFactory;
+
+import nl.ellipsis.tpjms.client.TPJMSConnectionFactory;
+
 import java.io.*;
 
 public class Chat implements javax.jms.MessageListener {
@@ -13,7 +15,7 @@ public class Chat implements javax.jms.MessageListener {
 	/* Constructor. Establish JMS publisher and subscriber */
 	public Chat(String topicName, String username, String password) throws Exception {
 		// Look up a JMS connection factory
-		TopicConnectionFactory conFactory = new TinyJmsConnectionFactory();
+		TopicConnectionFactory conFactory = new TPJMSConnectionFactory();
 
 		// Create a JMS connection
 		TopicConnection connection = conFactory.createTopicConnection(username, password);
