@@ -1,6 +1,5 @@
 package nl.ellipsis.tpjms.client;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
@@ -8,8 +7,8 @@ import javax.jms.QueueSender;
 
 public class TPJMSQueueSender extends TPJMSMessageProducer implements QueueSender {
 
-	public TPJMSQueueSender(Queue queue) throws JMSException {
-		super(queue);
+	public TPJMSQueueSender(TPJMSConnection connection, Queue queue) throws JMSException {
+		super(connection,queue);
 	}
 
 	public Queue getQueue() throws JMSException {

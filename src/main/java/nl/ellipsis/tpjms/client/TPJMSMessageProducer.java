@@ -37,8 +37,7 @@ import org.apache.logging.log4j.*;
  * @see javax.jms.QueueSender
  * @see javax.jms.Session#createProducer
  */
-public class TPJMSMessageProducer implements MessageProducer
-{
+public class TPJMSMessageProducer implements MessageProducer {
 	private static final Logger logger = LogManager.getLogger(TPJMSMessageProducer.class);
 
 	/**
@@ -50,30 +49,35 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * Delivery mode - must be gated by configLock.
 	 */
 	private int defaultDeliveryMode = Message.DEFAULT_DELIVERY_MODE;
-	
+
 	/**
 	 * Priority - must be gated by configLock.
 	 */
 	private int defaultPriority = Message.DEFAULT_PRIORITY;
-	
+
 	/**
 	 * Time-to-live in milliseconds - must be gated by configLock.
 	 */
 	private long defaultTimeToLive = Message.DEFAULT_TIME_TO_LIVE;
-	
+
 	/**
 	 * Destination
 	 */
 	private final Destination defaultDestination;
-	
-	TPJMSMessageProducer(Destination destination) throws JMSException
-	{
+
+	/**
+	 * Connection
+	 */
+	private final TPJMSConnection connection;
+
+	TPJMSMessageProducer(TPJMSConnection connection, Destination destination) throws JMSException {
+		this.connection = connection;
 		this.defaultDestination = destination;
-		
+
 		if (destination != null)
 			validateDestination(destination);
 	}
-	
+
 	/**
 	 * Closes the message producer.
 	 * 
@@ -85,12 +89,11 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * </p>
 	 * 
 	 * @throws JMSException
-	 *           if the JMS provider fails to close the producer due to some
-	 *           internal error.
+	 *             if the JMS provider fails to close the producer due to some
+	 *             internal error.
 	 */
 	@Override
-	public void close() throws JMSException
-	{
+	public void close() throws JMSException {
 		// TODO Auto-generated method stub
 		logger.warn("close() not implmented");
 	}
@@ -102,15 +105,11 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * @see #setDeliveryMode(int)
 	 */
 	@Override
-	public int getDeliveryMode()
-	{
-		try
-		{
+	public int getDeliveryMode() {
+		try {
 			configLock.readLock().lock();
 			return defaultDeliveryMode;
-		}
-		finally
-		{
+		} finally {
 			configLock.readLock().unlock();
 		}
 	}
@@ -122,8 +121,7 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * @since JMS 1.1
 	 */
 	@Override
-	public Destination getDestination()
-	{
+	public Destination getDestination() {
 		return defaultDestination;
 	}
 
@@ -133,8 +131,7 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * @return <code>false</code>
 	 */
 	@Override
-	public boolean getDisableMessageID()
-	{
+	public boolean getDisableMessageID() {
 		return false;
 	}
 
@@ -144,8 +141,7 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * @return <code>false</code>
 	 */
 	@Override
-	public boolean getDisableMessageTimestamp()
-	{
+	public boolean getDisableMessageTimestamp() {
 		return false;
 	}
 
@@ -156,36 +152,28 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * @see #setPriority(int)
 	 */
 	@Override
-	public int getPriority()
-	{
-		try
-		{
+	public int getPriority() {
+		try {
 			configLock.readLock().lock();
 			return defaultPriority;
-		}
-		finally
-		{
+		} finally {
 			configLock.readLock().unlock();
 		}
 	}
 
 	/**
-	 * Gets the default length of time in milliseconds from its dispatch time that
-	 * a produced message should be retained by the message system.
+	 * Gets the default length of time in milliseconds from its dispatch time
+	 * that a produced message should be retained by the message system.
 	 * 
 	 * @return the message time to live in milliseconds; zero is unlimited
 	 * @see #setTimeToLive(long)
 	 */
 	@Override
-	public long getTimeToLive()
-	{
-		try
-		{
+	public long getTimeToLive() {
+		try {
 			configLock.readLock().lock();
 			return defaultTimeToLive;
-		}
-		finally
-		{
+		} finally {
 			configLock.readLock().unlock();
 		}
 	}
@@ -195,46 +183,42 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * priority, and time to live.
 	 * 
 	 * @param message
-	 *          the message to send
+	 *            the message to send
 	 * 
 	 * @throws JMSException
-	 *           if the JMS provider fails to send the message due to some
-	 *           internal error.
+	 *             if the JMS provider fails to send the message due to some
+	 *             internal error.
 	 * @throws MessageFormatException
-	 *           if an invalid message is specified.
+	 *             if an invalid message is specified.
 	 * @throws InvalidDestinationException
-	 *           if a client uses this method with a <code>MessageProducer</code>
-	 *           with an invalid destination.
+	 *             if a client uses this method with a
+	 *             <code>MessageProducer</code> with an invalid destination.
 	 * @throws UnsupportedOperationException
-	 *           - if a client uses this method with a
-	 *           <code>MessageProducer</code> that did not specify a destination
-	 *           at creation time.
+	 *             - if a client uses this method with a
+	 *             <code>MessageProducer</code> that did not specify a
+	 *             destination at creation time.
 	 * @since JMS 1.1
 	 * @see Session#createProducer(javax.jms.Destination)
 	 * @see MessageProducer
 	 */
 	@Override
-	public void send(Message message) throws JMSException
-	{
-		if (defaultDestination == null)
-		{
-			throw new UnsupportedOperationException("This producer requires a destination to be specified at send() time.");
+	public void send(Message message) throws JMSException {
+		if (defaultDestination == null) {
+			throw new UnsupportedOperationException(
+					"This producer requires a destination to be specified at send() time.");
 		}
-		
+
 		int deliveryMode;
 		int priority;
 		long timeToLive;
-		
-		try 
-		{
+
+		try {
 			configLock.readLock().lock();
-			
+
 			deliveryMode = defaultDeliveryMode;
 			priority = defaultPriority;
 			timeToLive = defaultTimeToLive;
-		}
-		finally
-		{
+		} finally {
 			configLock.readLock().unlock();
 		}
 
@@ -242,9 +226,9 @@ public class TPJMSMessageProducer implements MessageProducer
 	}
 
 	/**
-	 * Sends a message to a destination for an unidentified message producer. Uses
-	 * the <code>MessageProducer</code>'s default delivery mode, priority, and
-	 * time to live.
+	 * Sends a message to a destination for an unidentified message producer.
+	 * Uses the <code>MessageProducer</code>'s default delivery mode, priority,
+	 * and time to live.
 	 * 
 	 * <p>
 	 * Typically, a message producer is assigned a destination at creation time;
@@ -253,45 +237,41 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * </p>
 	 * 
 	 * @param destination
-	 *          the destination to send this message to
+	 *            the destination to send this message to
 	 * @param message
-	 *          the message to send
+	 *            the message to send
 	 * @throws JMSException
-	 *           if the JMS provider fails to send the message due to some
-	 *           internal error.
+	 *             if the JMS provider fails to send the message due to some
+	 *             internal error.
 	 * @throws MessageFormatException
-	 *           if an invalid message is specified.
+	 *             if an invalid message is specified.
 	 * @throws InvalidDestinationException
-	 *           if a client uses this method with an invalid destination.
+	 *             if a client uses this method with an invalid destination.
 	 * @throws UnsupportedOperationException
-	 *           if a client uses this method with a MessageProducer that
-	 *           specified a destination at creation time.
+	 *             if a client uses this method with a MessageProducer that
+	 *             specified a destination at creation time.
 	 * @since JMS 1.1
 	 * @see Session#createProducer(javax.jms.Destination)
 	 * @see MessageProducer
 	 */
 	@Override
-	public void send(Destination destination, Message message) throws JMSException
-	{
-		if (defaultDestination != null)
-		{
-			throw new UnsupportedOperationException("This producer does not allow a destination to be specified at send() time");
+	public void send(Destination destination, Message message) throws JMSException {
+		if (defaultDestination != null) {
+			throw new UnsupportedOperationException(
+					"This producer does not allow a destination to be specified at send() time");
 		}
-		
+
 		int deliveryMode;
 		int priority;
 		long timeToLive;
-		
-		try 
-		{
+
+		try {
 			configLock.readLock().lock();
-			
+
 			deliveryMode = defaultDeliveryMode;
 			priority = defaultPriority;
 			timeToLive = defaultTimeToLive;
-		}
-		finally
-		{
+		} finally {
 			configLock.readLock().unlock();
 		}
 
@@ -299,39 +279,39 @@ public class TPJMSMessageProducer implements MessageProducer
 	}
 
 	/**
-	 * Sends a message to the destination, specifying delivery mode, priority, and
-	 * time to live.
+	 * Sends a message to the destination, specifying delivery mode, priority,
+	 * and time to live.
 	 * 
 	 * @param message
-	 *          the message to send
+	 *            the message to send
 	 * @param deliveryMode
-	 *          the delivery mode to use
+	 *            the delivery mode to use
 	 * @param priority
-	 *          the priority for this message
+	 *            the priority for this message
 	 * @param timeToLive
-	 *          the message's lifetime (in milliseconds)
+	 *            the message's lifetime (in milliseconds)
 	 * @throws JMSException
-	 *           if the JMS provider fails to send the message due to some
-	 *           internal error.
+	 *             if the JMS provider fails to send the message due to some
+	 *             internal error.
 	 * @throws MessageFormatException
-	 *           if an invalid message is specified.
+	 *             if an invalid message is specified.
 	 * @throws InvalidDestinationException
-	 *           if a client uses this method with a <code>MessageProducer</code>
-	 *           with an invalid destination.
+	 *             if a client uses this method with a
+	 *             <code>MessageProducer</code> with an invalid destination.
 	 * @throws UnsupportedOperationException
-	 *           if a client uses this method with a <code>MessageProducer</code>
-	 *           that did not specify a destination at creation time.
+	 *             if a client uses this method with a
+	 *             <code>MessageProducer</code> that did not specify a
+	 *             destination at creation time.
 	 * @since JMS 1.1
 	 * @see Session#createProducer(javax.jms.Destination)
 	 */
 	@Override
-	public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-	{
-		if (defaultDestination == null)
-		{
-			throw new UnsupportedOperationException("This producer requires a destination to be specified at send() time.");
+	public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException {
+		if (defaultDestination == null) {
+			throw new UnsupportedOperationException(
+					"This producer requires a destination to be specified at send() time.");
 		}
-		
+
 		sendInternal(defaultDestination, message, deliveryMode, priority, timeToLive);
 	}
 
@@ -346,48 +326,44 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * </p>
 	 * 
 	 * @param destination
-	 *          the destination to send this message to
+	 *            the destination to send this message to
 	 * @param message
-	 *          the message to send
+	 *            the message to send
 	 * @param deliveryMode
-	 *          the delivery mode to use
+	 *            the delivery mode to use
 	 * @param priority
-	 *          the priority for this message
+	 *            the priority for this message
 	 * @param timeToLive
-	 *          the message's lifetime (in milliseconds)
+	 *            the message's lifetime (in milliseconds)
 	 * @throws JMSException
-	 *           if the JMS provider fails to send the message due to some
-	 *           internal error.
+	 *             if the JMS provider fails to send the message due to some
+	 *             internal error.
 	 * @throws MessageFormatException
-	 *           if an invalid message is specified.
+	 *             if an invalid message is specified.
 	 * @param InvalidDestinationException
-	 *          if a client uses this method with an invalid destination.
+	 *            if a client uses this method with an invalid destination.
 	 * @since JMS 1.1
 	 * @see Session#createProducer(javax.jms.Destination)
 	 */
 	@Override
-	public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-	{
-		if (defaultDestination != null)
-		{
-			throw new UnsupportedOperationException("This producer does not allow a destination to be specified at send() time");
+	public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive)
+			throws JMSException {
+		if (defaultDestination != null) {
+			throw new UnsupportedOperationException(
+					"This producer does not allow a destination to be specified at send() time");
 		}
-		
+
 		sendInternal(destination, message, deliveryMode, priority, timeToLive);
 	}
-	
+
 	@Override
-	public void setDeliveryMode(int deliveryMode) throws JMSException
-	{
+	public void setDeliveryMode(int deliveryMode) throws JMSException {
 		validateDeliveryMode(deliveryMode);
-		
-		try
-		{
+
+		try {
 			configLock.writeLock().lock();
 			defaultDeliveryMode = deliveryMode;
-		}
-		finally
-		{
+		} finally {
 			configLock.writeLock().unlock();
 		}
 	}
@@ -400,12 +376,12 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * </p>
 	 * 
 	 * @param value
-	 *          indicates if message IDs are disabled
+	 *            indicates if message IDs are disabled
 	 */
 	@Override
-	public void setDisableMessageID(boolean value)
-	{
-		logger.debug("Application requested message ID generation to be " + (value ? "disabled" : "enabled") + ", ignoring");
+	public void setDisableMessageID(boolean value) {
+		logger.debug(
+				"Application requested message ID generation to be " + (value ? "disabled" : "enabled") + ", ignoring");
 	}
 
 	/**
@@ -415,12 +391,12 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * </p>
 	 * 
 	 * @param value
-	 *          indicates if message timestamps are disabled
+	 *            indicates if message timestamps are disabled
 	 */
 	@Override
-	public void setDisableMessageTimestamp(boolean value)
-	{
-		logger.debug("Application requested message timestamp generation to be " + (value ? "disabled" : "enabled") + ", ignoring");
+	public void setDisableMessageTimestamp(boolean value) {
+		logger.debug("Application requested message timestamp generation to be " + (value ? "disabled" : "enabled")
+				+ ", ignoring");
 	}
 
 	/**
@@ -429,111 +405,93 @@ public class TPJMSMessageProducer implements MessageProducer
 	 * <p>
 	 * The JMS API defines ten levels of priority value, with 0 as the lowest
 	 * priority and 9 as the highest. Clients should consider priorities 0-4 as
-	 * gradations of normal priority and priorities 5-9 as gradations of expedited
-	 * priority. Priority is set to 4 by default.
+	 * gradations of normal priority and priorities 5-9 as gradations of
+	 * expedited priority. Priority is set to 4 by default.
 	 * </p>
 	 * 
 	 * @param priority
-	 *          the message priority for this message producer; must be a value
-	 *          between 0 and 9
+	 *            the message priority for this message producer; must be a
+	 *            value between 0 and 9
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the priority due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the priority due to some
+	 *             internal error.
 	 * @see #getPriority()
 	 * @see Message#DEFAULT_PRIORITY
 	 */
 	@Override
-	public void setPriority(int priority) throws JMSException
-	{
+	public void setPriority(int priority) throws JMSException {
 		validatePriority(priority);
-		
-		try
-		{
+
+		try {
 			configLock.writeLock().lock();
 			defaultPriority = priority;
-		}
-		finally
-		{
+		} finally {
 			configLock.writeLock().unlock();
 		}
 	}
 
 	/**
-	 * Sets the default length of time in milliseconds from its dispatch time that
-	 * a produced message should be retained by the message system.
+	 * Sets the default length of time in milliseconds from its dispatch time
+	 * that a produced message should be retained by the message system.
 	 * 
 	 * <p>
 	 * Time to live is set to zero by default.
 	 * </p>
 	 * 
 	 * @param timeToLive
-	 *          the message time to live in milliseconds; zero is unlimited
+	 *            the message time to live in milliseconds; zero is unlimited
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the time to live due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the time to live due to some
+	 *             internal error.
 	 * @see #getTimeToLive()
 	 * @see Message#DEFAULT_TIME_TO_LIVE
 	 */
 	@Override
-	public void setTimeToLive(long timeToLive) throws JMSException
-	{
+	public void setTimeToLive(long timeToLive) throws JMSException {
 		validateTimeToLive(timeToLive);
-		
-		try
-		{
+
+		try {
 			configLock.writeLock().lock();
 			defaultTimeToLive = timeToLive;
-		}
-		finally
-		{
+		} finally {
 			configLock.writeLock().unlock();
 		}
 	}
 
-	private void sendInternal(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-	{
+	private void sendInternal(Destination destination, Message message, int deliveryMode, int priority, long timeToLive)
+			throws JMSException {
 		validateDestination(destination);
 		validateDeliveryMode(deliveryMode);
 		validatePriority(priority);
-		validateTimeToLive(timeToLive);	
-
-		TPJMSDestination jmsDestination = (TPJMSDestination) destination;
-		jmsDestination.send(message);
+		validateTimeToLive(timeToLive);
+		
+		connection.getProvider().send(destination, message);
 	}
-	
-	private void validateDestination(Destination destination) throws InvalidDestinationException
-	{
-		if (destination == null)
-		{
+
+	private void validateDestination(Destination destination) throws InvalidDestinationException {
+		if (destination == null) {
 			throw new InvalidDestinationException("destination must be specified");
 		}
-		
-		if (!(destination instanceof TPJMSDestination))
-		{
+
+		if (!(destination instanceof TPJMSDestination)) {
 			throw new InvalidDestinationException("Invalid destination: " + destination);
 		}
 	}
 
-	private void validateDeliveryMode(int deliveryMode) throws JMSException
-	{
-		if (deliveryMode != DeliveryMode.PERSISTENT && deliveryMode != DeliveryMode.NON_PERSISTENT)
-		{
+	private void validateDeliveryMode(int deliveryMode) throws JMSException {
+		if (deliveryMode != DeliveryMode.PERSISTENT && deliveryMode != DeliveryMode.NON_PERSISTENT) {
 			throw new JMSException("Invalid delivery mode: " + deliveryMode);
 		}
 	}
-	
-	private void validatePriority(int priority) throws JMSException
-	{
-		if (priority < 0 || priority > 9)
-		{
+
+	private void validatePriority(int priority) throws JMSException {
+		if (priority < 0 || priority > 9) {
 			throw new JMSException("Invalid priority: " + priority);
 		}
 	}
 
-	private void validateTimeToLive(long timeToLive) throws JMSException
-	{
-		if (timeToLive < 0L)
-		{
+	private void validateTimeToLive(long timeToLive) throws JMSException {
+		if (timeToLive < 0L) {
 			throw new JMSException("Invalid timeToLive: " + timeToLive);
 		}
 	}

@@ -8,8 +8,8 @@ import javax.jms.TopicPublisher;
 public class TPJMSTopicPublisher extends TPJMSMessageProducer implements
 		TopicPublisher {
 
-	public TPJMSTopicPublisher(Topic topic) throws JMSException {
-		super(topic);
+	public TPJMSTopicPublisher(TPJMSConnection connection, Topic topic) throws JMSException {
+		super(connection,topic);
 	}
 
 	public Topic getTopic() throws JMSException {

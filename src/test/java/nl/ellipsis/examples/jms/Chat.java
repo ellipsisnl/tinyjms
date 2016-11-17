@@ -7,13 +7,14 @@ import nl.ellipsis.tpjms.client.TPJMSConnectionFactory;
 import java.io.*;
 
 public class Chat implements javax.jms.MessageListener {
-	private TopicSession pubSession;
+	private TopicSession session;
 	private TopicPublisher publisher;
 	private TopicConnection connection;
 	private String username;
 
 	/* Constructor. Establish JMS publisher and subscriber */
 	public Chat(String topicName, String username, String password) throws Exception {
+		
 		// Look up a JMS connection factory
 		TopicConnectionFactory conFactory = new TPJMSConnectionFactory();
 
@@ -21,32 +22,32 @@ public class Chat implements javax.jms.MessageListener {
 		TopicConnection connection = conFactory.createTopicConnection(username, password);
 
 		// Create two JMS session objects
-		TopicSession pubSession = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-		TopicSession subSession = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+		TopicSession topicSession = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
 		// Look up a JMS topic
 		// Topic chatTopic = (Topic) jndi.lookup(topicName);
-		Topic chatTopic = pubSession.createTopic(topicName);
+		Topic chatTopic = topicSession.createTopic(topicName);
 
 		// Create a JMS publisher and subscriber
-		TopicPublisher publisher = pubSession.createPublisher(chatTopic);
-		TopicSubscriber subscriber = subSession.createSubscriber(chatTopic);
+		TopicPublisher publisher = topicSession.createPublisher(chatTopic);
+		TopicSubscriber subscriber = topicSession.createSubscriber(chatTopic);
 
 		// Set a JMS message listener
 		subscriber.setMessageListener(this);
 
 		// Intialize the Chat application
-		set(username,publisher,pubSession);
+		set(username,publisher,connection,topicSession);
 
 		// Start the JMS connection; allows messages to be delivered
 		connection.start();
 	}
 
 	/* Initialize the instance variables */
-	public void set(String username,TopicPublisher publisher,TopicSession pubSession) {
+	public void set(String username, TopicPublisher publisher, TopicConnection connection, TopicSession session) {
 		this.username = username;
 		this.publisher = publisher;
-		this.pubSession = pubSession;
+		this.connection = connection;
+		this.session = session;
 	}
 
 	/* Receive message as TopicSubscriber */
@@ -62,7 +63,7 @@ public class Chat implements javax.jms.MessageListener {
 
 	/* Create and send message as TopicPublisher */
 	protected void writeMessage(String text) throws JMSException {
-		TextMessage message = pubSession.createTextMessage();
+		TextMessage message = session.createTextMessage();
 		message.setText(username + " said '" + text+"'");
 		publisher.publish(message);
 	}

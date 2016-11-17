@@ -7,13 +7,12 @@ import javax.jms.*;
 /**
  * TinyJms implementation of {@link ObjectMessage}.
  */
-public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage
-{
+public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage {
+	private Serializable object;
 	private byte[] data;
 	private boolean readOnly = false;
 
-	TPJMSObjectMessage()
-	{
+	TPJMSObjectMessage() {
 
 	}
 
@@ -21,158 +20,135 @@ public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage
 	 * Sets the read-only flag for this message.
 	 * 
 	 * @param readOnly
-	 *          <code>true</code> if read-only
+	 *            <code>true</code> if read-only
 	 */
-	void setReadOnly(boolean readOnly)
-	{
+	void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
 	}
 
 	@Override
-	public void clearBody() throws JMSException
-	{
+	public void clearBody() throws JMSException {
 		super.clearBody();
 		data = null;
 		readOnly = false;
 	}
 
 	@Override
-	byte[] getBody() throws JMSException
-	{
-		if (data == null)
-		{
+	byte[] getBody() throws JMSException {
+		if (data == null) {
 			return null;
 		}
-		
+
 		byte[] copy = new byte[data.length];
 		System.arraycopy(data, 0, copy, 0, data.length);
 		return copy;
 	}
-	
+
 	@Override
-	void setBody(byte[] bodyData) throws JMSException
-	{
-		if (bodyData == null)
-		{
+	void setBody(byte[] bodyData) throws JMSException {
+		if (bodyData == null) {
 			this.data = null;
-		}
-		else
-		{
+		} else {
 			this.data = new byte[bodyData.length];
 			System.arraycopy(bodyData, 0, this.data, 0, bodyData.length);
 		}
 	}
-	
+
 	/**
 	 * Gets the serializable object containing this message's data. The default
 	 * value is <code>null</code>.
 	 * 
 	 * @return the serializable object containing this message's data
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the object due to some internal
-	 *           error.
+	 *             if the JMS provider fails to get the object due to some
+	 *             internal error.
 	 * @throws MessageFormatException
-	 *           if object deserialization fails.
+	 *             if object deserialization fails.
 	 */
 	@Override
-	public Serializable getObject() throws JMSException
-	{
-		if (data == null)
-		{
+	public Serializable getObject() throws JMSException {
+		return object;
+	}
+	
+	/**
+	 * Sets the serializable object containing this message's data. It is
+	 * important to note that an <code>ObjectMessage</code> contains a snapshot
+	 * of the object at the time <code>setObject()</code> is called; subsequent
+	 * modifications of the object will have no effect on the
+	 * <code>ObjectMessage</code> body.
+	 * 
+	 * @param object
+	 *            the message's data
+	 * @throws JMSException
+	 *             if the JMS provider fails to set the object due to some
+	 *             internal error.
+	 * @throws MessageFormatException
+	 *             if object serialization fails.
+	 * @throws MessageNotWriteableException
+	 *             if the message is in read-only mode.
+	 */
+	@Override
+	public void setObject(Serializable object) throws JMSException {
+		this.object = object;
+	}
+
+	private Serializable getSerializableObject() throws JMSException {
+		if (data == null) {
 			return null;
 		}
 
 		ByteArrayInputStream bis = null;
 		ObjectInputStream ois = null;
 
-		try
-		{
+		try {
 			bis = new ByteArrayInputStream(data);
 			ois = new ObjectInputStream(bis);
 			return (Serializable) ois.readObject();
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			throw new MessageFormatException("Unable to deserialize object: " + e.getMessage());
-		}
-		finally
-		{
+		} finally {
 			if (ois != null)
-				try
-				{
+				try {
 					ois.close();
+				} catch (Exception ignored) {
 				}
-				catch (Exception ignored)
-				{}
 			if (bis != null)
-				try
-				{
+				try {
 					ois.close();
+				} catch (Exception ignored) {
 				}
-				catch (Exception ignored)
-				{}
 		}
 	}
 
-	/**
-	 * Sets the serializable object containing this message's data. It is
-	 * important to note that an <code>ObjectMessage</code> contains a snapshot of
-	 * the object at the time <code>setObject()</code> is called; subsequent
-	 * modifications of the object will have no effect on the
-	 * <code>ObjectMessage</code> body.
-	 * 
-	 * @param object
-	 *          the message's data
-	 * @throws JMSException
-	 *           if the JMS provider fails to set the object due to some internal
-	 *           error.
-	 * @throws MessageFormatException
-	 *           if object serialization fails.
-	 * @throws MessageNotWriteableException
-	 *           if the message is in read-only mode.
-	 */
-	@Override
-	public void setObject(Serializable object) throws JMSException
-	{
-		if (readOnly)
-		{
+	private void setSerializableObject(Serializable object) throws JMSException {
+		if (readOnly) {
 			throw new MessageNotWriteableException("Message is read-only");
 		}
-		
-		if (object == null)
-		{
+
+		if (object == null) {
 			data = null;
 			return;
 		}
 
 		ByteArrayOutputStream bos = null;
 		ObjectOutputStream oos = null;
-		try
-		{
+		try {
 			bos = new ByteArrayOutputStream();
 			oos = new ObjectOutputStream(bos);
 			oos.writeObject(object);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			throw new MessageFormatException("Unable to serialize object: " + e.getMessage());
-		}
-		finally
-		{
+		} finally {
 			if (oos != null)
-				try
-				{
+				try {
 					oos.close();
+				} catch (Exception ignored) {
 				}
-				catch (Exception ignored)
-				{}
 			if (bos != null)
-				try
-				{
+				try {
 					oos.close();
+				} catch (Exception ignored) {
 				}
-				catch (Exception ignored)
-				{}
 		}
 
 		this.data = bos.toByteArray();

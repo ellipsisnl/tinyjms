@@ -50,13 +50,11 @@ public class TPJMSMessageConsumer implements MessageConsumer {
 
     public TPJMSMessageConsumer(Destination destination) throws JMSException {
 		this.destination = destination;
-		registerMessageConsumer();
 	}
 
 	public TPJMSMessageConsumer(Destination destination, String messageSelector) throws JMSException {
 		this.destination = destination;
 		this.messageSelector = messageSelector;
-		registerMessageConsumer();
 	}
 
 	/**
@@ -181,17 +179,12 @@ public class TPJMSMessageConsumer implements MessageConsumer {
 		this.messageListener = messageListener;
 	}
 	
-	///////// INTERNAL
+	/*
+	 *  TPJMS-specific
+	 */
 
 	protected Destination getDestination() {
 		return destination;
 	}
 	
-	private void registerMessageConsumer() throws JMSException {
-		if(destination instanceof TPJMSDestination) {
-			TPJMSDestination jmsDestination = (TPJMSDestination) destination;
-			jmsDestination.setMessageConsumer(this);
-		}
-	}
-
 }

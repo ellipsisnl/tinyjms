@@ -3,162 +3,137 @@ package nl.ellipsis.tpjms.client;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.jms.*;
 
 import org.apache.logging.log4j.*;
 
-public class TPJMSSession implements Session, QueueSession, TopicSession
-{
+public class TPJMSSession implements Session, QueueSession, TopicSession {
 	private static final Logger logger = LogManager.getLogger(TPJMSSession.class);
-	
+
 	private final TPJMSConnection connection;
 	private final int acknowledgeMode;
-	
-	private static List<Destination> destinations = new ArrayList<Destination>();
-	
+
 	/**
 	 * Creates a new JMS session.
 	 * 
 	 * @param transacted
-	 *          indicates whether the session is transacted
+	 *            indicates whether the session is transacted
 	 * @param acknowledgeMode
-	 *          indicates whether the consumer or the client will acknowledge any
-	 *          messages it receives; ignored if the session is transacted. Legal
-	 *          values are {@link Session#AUTO_ACKNOWLEDGE},
-	 *          {@link Session#CLIENT_ACKNOWLEDGE}, and
-	 *          {@link Session#DUPS_OK_ACKNOWLEDGE}.
+	 *            indicates whether the consumer or the client will acknowledge
+	 *            any messages it receives; ignored if the session is
+	 *            transacted. Legal values are {@link Session#AUTO_ACKNOWLEDGE},
+	 *            {@link Session#CLIENT_ACKNOWLEDGE}, and
+	 *            {@link Session#DUPS_OK_ACKNOWLEDGE}.
 	 * @throws JMSException
-	 *           if the Connection object fails to create a session due to some
-	 *           internal error or lack of support for the specific transaction
-	 *           and acknowledgement mode.
+	 *             if the Connection object fails to create a session due to
+	 *             some internal error or lack of support for the specific
+	 *             transaction and acknowledgement mode.
 	 * @since JMS 1.1
 	 * @see TPJMSConnection#createSession(boolean, int)
 	 * @see Session#AUTO_ACKNOWLEDGE
 	 * @see Session#CLIENT_ACKNOWLEDGE
 	 * @see Session#DUPS_OK_ACKNOWLEDGE
 	 */
-	TPJMSSession(TPJMSConnection connection, boolean transacted, int acknowledgeMode) throws JMSException
-	{
-		if (transacted)
-		{
+	TPJMSSession(TPJMSConnection connection, boolean transacted, int acknowledgeMode) throws JMSException {
+		if (transacted) {
 			// per spec, ignore ack value if transacted
 			acknowledgeMode = SESSION_TRANSACTED;
-		}
-		else if (acknowledgeMode == SESSION_TRANSACTED)
-		{
+		} else if (acknowledgeMode == SESSION_TRANSACTED) {
 			// conflicting modes
 			throw new JMSException("SESSION_TRANSACTED requires a transacted Session.");
 		}
-		
-		if (acknowledgeMode != AUTO_ACKNOWLEDGE &&
-				acknowledgeMode != CLIENT_ACKNOWLEDGE &&
-				acknowledgeMode != DUPS_OK_ACKNOWLEDGE &&
-				acknowledgeMode != SESSION_TRANSACTED)
-		{
+
+		if (acknowledgeMode != AUTO_ACKNOWLEDGE && acknowledgeMode != CLIENT_ACKNOWLEDGE
+				&& acknowledgeMode != DUPS_OK_ACKNOWLEDGE && acknowledgeMode != SESSION_TRANSACTED) {
 			throw new JMSException("Invalid acknowledgeMode: " + acknowledgeMode);
 		}
-		
+
 		this.acknowledgeMode = acknowledgeMode;
 		this.connection = connection;
 	}
-	
+
 	@Override
-	public void close() throws JMSException
-	{
+	public void close() throws JMSException {
 		// TODO Auto-generated method stub
 		logger.warn("close() not implemented yet");
 	}
-	
+
 	@Override
-	public void commit() throws JMSException
-	{
+	public void commit() throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public QueueBrowser createBrowser(Queue queue) throws JMSException
-	{
+	public QueueBrowser createBrowser(Queue queue) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public QueueBrowser createBrowser(Queue queue, String messageSelector) throws JMSException
-	{
+	public QueueBrowser createBrowser(Queue queue, String messageSelector) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public BytesMessage createBytesMessage() throws JMSException
-	{
+	public BytesMessage createBytesMessage() throws JMSException {
+		return new TPJMSBytesMessage();
+	}
+
+	@Override
+	public MessageConsumer createConsumer(Destination destination) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public MessageConsumer createConsumer(Destination destination) throws JMSException
-	{
+	public MessageConsumer createConsumer(Destination destination, String messageSelector) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public MessageConsumer createConsumer(Destination destination, String messageSelector) throws JMSException
-	{
+	public MessageConsumer createConsumer(Destination destination, String messageSelector, boolean NoLocal)
+			throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public MessageConsumer createConsumer(Destination destination, String messageSelector, boolean NoLocal) throws JMSException
-	{
+	public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException
-	{
+	public TopicSubscriber createDurableSubscriber(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public TopicSubscriber createDurableSubscriber(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public MapMessage createMapMessage() throws JMSException {
+		return new TPJMSMapMessage();
 	}
-	
+
 	@Override
-	public MapMessage createMapMessage() throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public Message createMessage() throws JMSException {
+		return new TPJMSMessage();
 	}
-	
+
 	@Override
-	public Message createMessage() throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public ObjectMessage createObjectMessage() throws JMSException {
+		return new TPJMSObjectMessage();
 	}
-	
+
 	@Override
-	public ObjectMessage createObjectMessage() throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public ObjectMessage createObjectMessage(Serializable object) throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public ObjectMessage createObjectMessage(Serializable object) throws JMSException {
+		ObjectMessage objectMessage = new TPJMSObjectMessage();
+		objectMessage.setObject(object);
+		return objectMessage;
 	}
 
 	/**
@@ -173,20 +148,20 @@ public class TPJMSSession implements Session, QueueSession, TopicSession
 	 * </p>
 	 * 
 	 * @param destination
-	 *          the <code>Destination</code> to send to, or <code>null</code> if
-	 *          this is a producer which does not have a specified destination.
+	 *            the <code>Destination</code> to send to, or <code>null</code>
+	 *            if this is a producer which does not have a specified
+	 *            destination.
 	 * 
 	 * @throws JMSException
-	 *           if the session fails to create a MessageProducer due to some
-	 *           internal error.
+	 *             if the session fails to create a MessageProducer due to some
+	 *             internal error.
 	 * @throws InvalidDestinationException
-	 *           if an invalid destination is specified.
+	 *             if an invalid destination is specified.
 	 * @since JMS 1.1
 	 */
 	@Override
-	public MessageProducer createProducer(Destination destination) throws JMSException
-	{
-		return new TPJMSMessageProducer(destination);
+	public MessageProducer createProducer(Destination destination) throws JMSException {
+		return new TPJMSMessageProducer(this.connection,destination);
 	}
 
 	/**
@@ -195,61 +170,55 @@ public class TPJMSSession implements Session, QueueSession, TopicSession
 	 * <p>
 	 * This facility is provided for the rare cases where clients need to
 	 * dynamically manipulate queue identity. It allows the creation of a queue
-	 * identity with a provider-specific name. Clients that depend on this ability
-	 * are not portable.
+	 * identity with a provider-specific name. Clients that depend on this
+	 * ability are not portable.
 	 * </p>
 	 * 
 	 * <p>
-	 * Note that this method is not for creating the physical queue. The physical
-	 * creation of queues is an administrative task and is not to be initiated by
-	 * the JMS API. The one exception is the creation of temporary queues, which
-	 * is accomplished with the {@link #createTemporaryQueue()} method.
-	 *</p>
+	 * Note that this method is not for creating the physical queue. The
+	 * physical creation of queues is an administrative task and is not to be
+	 * initiated by the JMS API. The one exception is the creation of temporary
+	 * queues, which is accomplished with the {@link #createTemporaryQueue()}
+	 * method.
+	 * </p>
 	 * 
 	 * @param queueName
-	 *          the name of this <code>Queue</code>
+	 *            the name of this <code>Queue</code>
 	 * @return a <code>Queue</code> with the given name
 	 * @throws JMSException
-	 *           if the session fails to create a queue due to some internal
-	 *           error.
+	 *             if the session fails to create a queue due to some internal
+	 *             error.
 	 * @since JMS 1.1
 	 */
 	@Override
-	public Queue createQueue(String queueName) throws JMSException
-	{
-		return new TPJMSQueue(queueName);
+	public Queue createQueue(String queueName) throws JMSException {
+		return connection.getProvider().createQueue(queueName);
 	}
-	
+
 	@Override
-	public StreamMessage createStreamMessage() throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public StreamMessage createStreamMessage() throws JMSException {
+		return new TPJMSStreamMessage();
 	}
-	
+
 	@Override
-	public TemporaryQueue createTemporaryQueue() throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public TemporaryQueue createTemporaryQueue() throws JMSException {
+		java.util.UUID uuid = UUID.randomUUID();
+		return new TPJMSTemporaryQueue(uuid.toString());
 	}
-	
+
 	@Override
-	public TemporaryTopic createTemporaryTopic() throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public TemporaryTopic createTemporaryTopic() throws JMSException {
+		java.util.UUID uuid = UUID.randomUUID();
+		return new TPJMSTemporaryTopic(uuid.toString());
 	}
-	
+
 	@Override
-	public TextMessage createTextMessage() throws JMSException
-	{
+	public TextMessage createTextMessage() throws JMSException {
 		return new TPJMSTextMessage();
 	}
-	
+
 	@Override
-	public TextMessage createTextMessage(String text) throws JMSException
-	{
+	public TextMessage createTextMessage(String text) throws JMSException {
 		return new TPJMSTextMessage(text);
 	}
 
@@ -258,142 +227,124 @@ public class TPJMSSession implements Session, QueueSession, TopicSession
 	 * 
 	 * <p>
 	 * This facility is provided for the rare cases where clients need to
-	 * dynamically manipulate topic identity. This allows the creation of a topic
-	 * identity with a provider-specific name. Clients that depend on this ability
-	 * are not portable.
+	 * dynamically manipulate topic identity. This allows the creation of a
+	 * topic identity with a provider-specific name. Clients that depend on this
+	 * ability are not portable.
 	 * </p>
 	 * 
 	 * <p>
-	 * Note that this method is not for creating the physical topic. The physical
-	 * creation of topics is an administrative task and is not to be initiated by
-	 * the JMS API. The one exception is the creation of temporary topics, which
-	 * is accomplished with the {@link #createTemporaryTopic()} method.
+	 * Note that this method is not for creating the physical topic. The
+	 * physical creation of topics is an administrative task and is not to be
+	 * initiated by the JMS API. The one exception is the creation of temporary
+	 * topics, which is accomplished with the {@link #createTemporaryTopic()}
+	 * method.
 	 * </p>
 	 * 
 	 * @param topicName
-	 *          the name of this <code>Topic</code>
+	 *            the name of this <code>Topic</code>
 	 * @return a <code>Topic</code> with the given name
 	 * @throws JMSException
-	 *           if the session fails to create a topic due to some internal
-	 *           error.
+	 *             if the session fails to create a topic due to some internal
+	 *             error.
 	 * @since JMS 1.1
 	 */
 	@Override
 	public Topic createTopic(String topicName) throws JMSException {
-		for(Destination destination : destinations) {
-			if(destination instanceof Topic && ((Topic) destination).getTopicName().equalsIgnoreCase(topicName)) {
-				return (Topic) destination;
-			}
-		}
-		Topic topic = new TPJMSTopic(topicName);
-		destinations.add(topic);
-		return topic;
+		return connection.getProvider().createTopic(topicName);
 	}
-	
+
 	/**
 	 * Returns the acknowledgement mode of the session. The acknowledgement mode
 	 * is set at the time that the session is created. If the session is
 	 * transacted, the acknowledgement mode is ignored.
 	 * 
 	 * @return If the session is not transacted, returns the current
-	 *         acknowledgement mode for the session. If the session is transacted,
-	 *         returns {@link Session#SESSION_TRANSACTED}.
+	 *         acknowledgement mode for the session. If the session is
+	 *         transacted, returns {@link Session#SESSION_TRANSACTED}.
 	 * @since JMS 1.1
 	 * @see Connection#createSession(boolean, int)
 	 */
 	@Override
-	public int getAcknowledgeMode()
-	{
+	public int getAcknowledgeMode() {
 		return acknowledgeMode;
 	}
-	
+
 	@Override
-	public MessageListener getMessageListener() throws JMSException
-	{
+	public MessageListener getMessageListener() throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Indicates whether the session is in transacted mode.
 	 * 
 	 * @return <code>true</code> if the session is in transacted mode
 	 */
 	@Override
-	public boolean getTransacted()
-	{
+	public boolean getTransacted() {
 		return acknowledgeMode == SESSION_TRANSACTED;
 	}
-	
+
 	@Override
-	public void recover() throws JMSException
-	{
+	public void recover() throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public void rollback() throws JMSException
-	{
+	public void rollback() throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public void run()
-	{
+	public void run() {
 		logger.warn("run() not implemented");
 	}
-	
+
 	@Override
-	public void setMessageListener(MessageListener listener) throws JMSException
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public void unsubscribe(String name) throws JMSException
-	{
+	public void setMessageListener(MessageListener listener) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public TopicPublisher createPublisher(Topic topic) throws JMSException
-	{
-		return new TPJMSTopicPublisher(topic);
-	}
-
-	@Override
-	public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal) throws JMSException
-	{
-		return new TPJMSTopicSubscriber(topic,messageSelector,noLocal);
-	}
-
-	@Override
-	public TopicSubscriber createSubscriber(Topic topic) throws JMSException
-	{
-		return createSubscriber(topic,null,true);
-	}
-
-	@Override
-	public QueueReceiver createReceiver(Queue queue, String messageSelector) throws JMSException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public QueueReceiver createReceiver(Queue queue) throws JMSException
-	{
-		return createReceiver(queue,null);
-	}
-
-	@Override
-	public QueueSender createSender(Queue queue) throws JMSException
-	{
+	public void unsubscribe(String name) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
-	}	
-	
+	}
+
+	@Override
+	public TopicPublisher createPublisher(Topic topic) throws JMSException {
+		return new TPJMSTopicPublisher(this.connection,topic);
+	}
+
+	@Override
+	public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal) throws JMSException {
+		TPJMSTopicSubscriber topicSubscriber = new TPJMSTopicSubscriber(topic, messageSelector, noLocal);
+		connection.getProvider().registerMessageConsumer(topic,topicSubscriber);
+		return topicSubscriber;
+	}
+
+	@Override
+	public TopicSubscriber createSubscriber(Topic topic) throws JMSException {
+		return createSubscriber(topic, null, true);
+	}
+
+	@Override
+	public QueueReceiver createReceiver(Queue queue, String messageSelector) throws JMSException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public QueueReceiver createReceiver(Queue queue) throws JMSException {
+		return createReceiver(queue, null);
+	}
+
+	@Override
+	public QueueSender createSender(Queue queue) throws JMSException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
 }

@@ -5,28 +5,23 @@ import javax.jms.*;
 /**
  * TinyJms implementation of {@link Queue}.
  */
-public class TPJMSQueue extends TPJMSDestination implements Queue
-{
-	TPJMSQueue(String queueName)
-	{
+public class TPJMSQueue extends TPJMSDestination implements Queue {
+	public TPJMSQueue(String queueName) {
 		super(queueName);
 	}
 
 	@Override
-	public final boolean isQueue()
-	{
+	public final boolean isQueue() {
 		return true;
 	}
 
 	@Override
-	public boolean isTopic()
-	{
+	public boolean isTopic() {
 		return false;
 	}
 
 	@Override
-	public boolean isTemporary()
-	{
+	public boolean isTemporary() {
 		return false;
 	}
 
@@ -40,8 +35,7 @@ public class TPJMSQueue extends TPJMSDestination implements Queue
 	 * @return the queue name
 	 */
 	@Override
-	public String getQueueName()
-	{
+	public String getQueueName() {
 		return super.getName();
 	}
 
@@ -51,8 +45,7 @@ public class TPJMSQueue extends TPJMSDestination implements Queue
 	 * @return the provider-specific identity values for this queue
 	 */
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "queue:" + super.toString();
 	}
 }

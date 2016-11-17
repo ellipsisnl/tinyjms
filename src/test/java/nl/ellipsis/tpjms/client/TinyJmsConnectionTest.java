@@ -134,15 +134,17 @@ public class TinyJmsConnectionTest
 	}
 
 	@Test
-	public void testStart()
+	public void testStart() throws JMSException
 	{
-		fail("Not yet implemented");
+		con.start();
+		assertTrue(con.isRunning());
 	}
 
 	@Test
-	public void testStop()
+	public void testStop() throws JMSException
 	{
-		fail("Not yet implemented");
+		con.stop();
+		assertFalse(con.isRunning());
 	}
 
 	@Test

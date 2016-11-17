@@ -65,21 +65,4 @@ abstract public class TPJMSDestination implements Destination {
 	 */
 	abstract public boolean isTemporary();
 	
-	/////// INTERNAL
-	
-	protected void setMessageConsumer(MessageConsumer messageConsumer) throws JMSException {
-		if(messageConsumers.contains(messageConsumer)) {
-			throw new JMSException("MessageConsumer "+messageConsumer.toString() +" is already registered");
-		}
-		messageConsumers.add(messageConsumer);
-	}
-	
-	protected void send(Message message) throws JMSException {
-		for(MessageConsumer messageConsumer : messageConsumers) {
-			if(messageConsumer.getMessageListener()!=null) {
-				messageConsumer.getMessageListener().onMessage(message);
-			}
-		}
-	}
-	
 }

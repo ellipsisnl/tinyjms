@@ -3,7 +3,8 @@ package nl.ellipsis.tpjms.client;
 import javax.jms.*;
 
 public class TPJMSTopic extends TPJMSDestination implements Topic {
-	TPJMSTopic(String topicName) {
+	
+	public TPJMSTopic(String topicName) {
 		super(topicName);
 	}
 
