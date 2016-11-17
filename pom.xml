@@ -5,10 +5,9 @@
 	<groupId>nl.ellipsis</groupId>
 	<artifactId>ellipsis-tinyjms</artifactId>
 	<packaging>jar</packaging>
-	<name>Randomcoder JMS Implementation</name>
+	<name>Ellipsis JMS Implementation</name>
 	<version>1.1-SNAPSHOT</version>
 	<description>Tiny JMS Implementation</description>
-	<url>http://randomcoder.org/maven/site/randomcoder-tinyjms/</url>
 	<inceptionYear>2009</inceptionYear>
 	<dependencies>
 		<dependency>
