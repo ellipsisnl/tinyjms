@@ -2,7 +2,7 @@ package nl.ellipsis.examples.jms;
 
 import javax.jms.*;
 
-import nl.ellipsis.tpjms.client.TPJMSConnectionFactory;
+import nl.ellipsis.tpjms.core.connection.TPJMSConnectionFactory;
 
 import java.io.*;
 

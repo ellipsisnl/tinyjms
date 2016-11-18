@@ -14,8 +14,8 @@ import javax.jms.Topic;
 
 import org.apache.logging.log4j.*;
 
-import nl.ellipsis.tpjms.client.TPJMSQueue;
-import nl.ellipsis.tpjms.client.TPJMSTopic;
+import nl.ellipsis.tpjms.core.destination.TPJMSQueue;
+import nl.ellipsis.tpjms.core.destination.TPJMSTopic;
 import nl.ellipsis.tpjms.provider.*;
 
 /**
