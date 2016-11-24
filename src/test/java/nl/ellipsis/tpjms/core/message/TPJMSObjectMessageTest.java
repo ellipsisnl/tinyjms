@@ -10,13 +10,16 @@ import javax.jms.*;
 import org.junit.*;
 
 import nl.ellipsis.tpjms.core.message.TPJMSObjectMessage;
+import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
 public class TPJMSObjectMessageTest {
+	private VmProvider vmProvider;
 	private TPJMSObjectMessage message;
 
 	@Before
-	public void setUp() {
-		message = new TPJMSObjectMessage();
+	public void setUp() throws Exception {
+		vmProvider = VmProvider.getInstance();
+		message = new TPJMSObjectMessage(vmProvider.createSession());
 	}
 
 	@After
@@ -59,7 +62,7 @@ public class TPJMSObjectMessageTest {
 
 	@Test(expected = MessageFormatException.class)
 	public void testInvalidDeserialization() throws Exception {
-		Field data = message.getClass().getDeclaredField("data");
+		Field data = message.getClass().getDeclaredField("body");
 		data.setAccessible(true);
 		data.set(message, new byte[] {});
 

@@ -7,26 +7,25 @@ import javax.jms.*;
 import org.junit.*;
 
 import nl.ellipsis.tpjms.core.message.TPJMSStreamMessage;
+import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
-public class TPJMSStreamMessageTest
-{
+public class TPJMSStreamMessageTest {
+	private VmProvider vmProvider;
 	private TPJMSStreamMessage message;
-	
+
 	@Before
-	public void setUp() throws Exception
-	{
-		message = new TPJMSStreamMessage();
+	public void setUp() throws Exception {
+		vmProvider = VmProvider.getInstance();
+		message = new TPJMSStreamMessage(vmProvider.createSession());
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		message = null;
 	}
-	
+
 	@Test
-	public void testReadBoolean() throws JMSException
-	{
+	public void testReadBoolean() throws JMSException {
 		message.writeBoolean(false);
 		message.writeString("true");
 		message.reset();
@@ -34,24 +33,21 @@ public class TPJMSStreamMessageTest
 		assertTrue(message.readBoolean());
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadBooleanNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadBooleanNotReadable() throws JMSException {
 		message.clearBody();
 		message.readBoolean();
 	}
 
 	@Test
-	public void testReadBooleanNull() throws JMSException
-	{
+	public void testReadBooleanNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		assertFalse(message.readBoolean());
 	}
 
 	@Test
-	public void testReadByte() throws JMSException
-	{
+	public void testReadByte() throws JMSException {
 		message.writeByte((byte) 123);
 		message.writeString("123");
 		message.reset();
@@ -59,24 +55,21 @@ public class TPJMSStreamMessageTest
 		assertEquals(123, message.readByte());
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadByteNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadByteNotReadable() throws JMSException {
 		message.clearBody();
 		message.readByte();
 	}
 
-	@Test(expected=NumberFormatException.class)
-	public void testReadByteNull() throws JMSException
-	{
+	@Test(expected = NumberFormatException.class)
+	public void testReadByteNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		message.readByte();
 	}
 
 	@Test
-	public void testReadBytes() throws JMSException
-	{
+	public void testReadBytes() throws JMSException {
 		byte[] buf = new byte[] { 0, 1, 2, 3 };
 		message.writeBytes(buf);
 		message.reset();
@@ -90,47 +83,41 @@ public class TPJMSStreamMessageTest
 		assertEquals(-1, message.readBytes(buf));
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadBytesNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadBytesNotReadable() throws JMSException {
 		message.clearBody();
 		message.readBytes(new byte[1]);
 	}
 
 	@Test
-	public void testReadBytesNull() throws JMSException
-	{
+	public void testReadBytesNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		assertEquals(-1, message.readBytes(new byte[1]));
 	}
 
 	@Test
-	public void testReadChar() throws JMSException
-	{
+	public void testReadChar() throws JMSException {
 		message.writeChar('A');
 		message.reset();
 		assertEquals('A', message.readChar());
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadCharNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadCharNotReadable() throws JMSException {
 		message.clearBody();
 		message.readChar();
 	}
 
-	@Test(expected=NullPointerException.class)
-	public void testReadCharNull() throws JMSException
-	{
+	@Test(expected = NullPointerException.class)
+	public void testReadCharNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		message.readChar();
 	}
 
 	@Test
-	public void testReadDouble() throws JMSException
-	{
+	public void testReadDouble() throws JMSException {
 		message.writeDouble(1.0d);
 		message.writeFloat(2.0f);
 		message.writeString("3.0");
@@ -140,24 +127,21 @@ public class TPJMSStreamMessageTest
 		assertEquals(3.0d, message.readDouble(), 0.01d);
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadDoubleNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadDoubleNotReadable() throws JMSException {
 		message.clearBody();
 		message.readDouble();
 	}
 
-	@Test(expected=NullPointerException.class)
-	public void testReadDoubleNull() throws JMSException
-	{
+	@Test(expected = NullPointerException.class)
+	public void testReadDoubleNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		message.readDouble();
 	}
 
 	@Test
-	public void testReadFloat() throws JMSException
-	{
+	public void testReadFloat() throws JMSException {
 		message.writeFloat(1.0f);
 		message.writeString("2.0");
 		message.reset();
@@ -165,24 +149,21 @@ public class TPJMSStreamMessageTest
 		assertEquals(2.0f, message.readFloat(), 0.01f);
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadFloatNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadFloatNotReadable() throws JMSException {
 		message.clearBody();
 		message.readFloat();
 	}
 
-	@Test(expected=NullPointerException.class)
-	public void testReadFloatNull() throws JMSException
-	{
+	@Test(expected = NullPointerException.class)
+	public void testReadFloatNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		message.readFloat();
 	}
 
 	@Test
-	public void testReadInt() throws JMSException
-	{
+	public void testReadInt() throws JMSException {
 		message.writeInt(1);
 		message.writeByte((byte) 2);
 		message.writeShort((short) 3);
@@ -194,24 +175,21 @@ public class TPJMSStreamMessageTest
 		assertEquals(4, message.readInt());
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadIntNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadIntNotReadable() throws JMSException {
 		message.clearBody();
 		message.readInt();
 	}
 
-	@Test(expected=NumberFormatException.class)
-	public void testReadIntNull() throws JMSException
-	{
+	@Test(expected = NumberFormatException.class)
+	public void testReadIntNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		message.readInt();
 	}
 
 	@Test
-	public void testReadLong() throws JMSException
-	{
+	public void testReadLong() throws JMSException {
 		message.writeLong(1L);
 		message.writeInt(2);
 		message.writeByte((byte) 3);
@@ -225,24 +203,21 @@ public class TPJMSStreamMessageTest
 		assertEquals(5, message.readLong());
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadLongNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadLongNotReadable() throws JMSException {
 		message.clearBody();
 		message.readLong();
 	}
 
-	@Test(expected=NumberFormatException.class)
-	public void testReadLongNull() throws JMSException
-	{
+	@Test(expected = NumberFormatException.class)
+	public void testReadLongNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		message.readLong();
 	}
 
 	@Test
-	public void testReadObject() throws JMSException
-	{
+	public void testReadObject() throws JMSException {
 		message.writeObject(null);
 		message.writeBoolean(true);
 		message.writeByte((byte) 1);
@@ -253,7 +228,7 @@ public class TPJMSStreamMessageTest
 		message.writeFloat(5.0f);
 		message.writeDouble(6.0d);
 		message.writeString("TEST");
-		message.writeBytes(new byte[] { 1, 2});
+		message.writeBytes(new byte[] { 1, 2 });
 		message.reset();
 		assertNull(message.readObject());
 		assertTrue((Boolean) message.readObject());
@@ -272,16 +247,14 @@ public class TPJMSStreamMessageTest
 		assertEquals(2, bytes[1]);
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadObjectNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadObjectNotReadable() throws JMSException {
 		message.clearBody();
 		message.readObject();
 	}
 
 	@Test
-	public void testReadShort() throws JMSException
-	{
+	public void testReadShort() throws JMSException {
 		message.writeByte((byte) 1);
 		message.writeShort((short) 2);
 		message.writeString("3");
@@ -292,8 +265,7 @@ public class TPJMSStreamMessageTest
 	}
 
 	@Test
-	public void testReadString() throws JMSException
-	{
+	public void testReadString() throws JMSException {
 		message.writeObject(null);
 		message.writeBoolean(true);
 		message.writeByte((byte) 1);
@@ -317,31 +289,27 @@ public class TPJMSStreamMessageTest
 		assertEquals("TEST", message.readString());
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadStringNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadStringNotReadable() throws JMSException {
 		message.clearBody();
 		message.readString();
 	}
 
-	@Test(expected=MessageNotReadableException.class)
-	public void testReadShortNotReadable() throws JMSException
-	{
+	@Test(expected = MessageNotReadableException.class)
+	public void testReadShortNotReadable() throws JMSException {
 		message.clearBody();
 		message.readShort();
 	}
 
-	@Test(expected=NumberFormatException.class)
-	public void testReadShortNull() throws JMSException
-	{
+	@Test(expected = NumberFormatException.class)
+	public void testReadShortNull() throws JMSException {
 		message.writeObject(null);
 		message.reset();
 		message.readShort();
 	}
 
 	@Test
-	public void testReset() throws JMSException
-	{
+	public void testReset() throws JMSException {
 		message.writeInt(1);
 		message.reset();
 		assertEquals(1, message.readInt());
@@ -350,38 +318,33 @@ public class TPJMSStreamMessageTest
 	}
 
 	@Test
-	public void testWriteBoolean() throws JMSException
-	{
+	public void testWriteBoolean() throws JMSException {
 		message.writeBoolean(true);
 		message.reset();
 		assertTrue(message.readBoolean());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteBooleanNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteBooleanNotWritable() throws JMSException {
 		message.reset();
 		message.writeBoolean(true);
 	}
-	
+
 	@Test
-	public void testWriteByte() throws JMSException
-	{
+	public void testWriteByte() throws JMSException {
 		message.writeByte(Byte.MAX_VALUE);
 		message.reset();
 		assertEquals(Byte.MAX_VALUE, message.readByte());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteByteNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteByteNotWritable() throws JMSException {
 		message.reset();
 		message.writeByte(Byte.MIN_VALUE);
 	}
 
 	@Test
-	public void testWriteBytes() throws JMSException
-	{
+	public void testWriteBytes() throws JMSException {
 		byte[] bytes = new byte[] { 1, 2 };
 		message.writeBytes(bytes);
 		message.reset();
@@ -392,16 +355,14 @@ public class TPJMSStreamMessageTest
 		assertEquals(2, bytes[1]);
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteBytesNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteBytesNotWritable() throws JMSException {
 		message.reset();
 		message.writeBytes(new byte[] { 1 });
 	}
 
 	@Test
-	public void testWriteBytesPartial() throws JMSException
-	{
+	public void testWriteBytesPartial() throws JMSException {
 		byte[] bytes = new byte[] { 1, 2 };
 		message.writeBytes(bytes, 1, 1);
 		message.reset();
@@ -411,91 +372,79 @@ public class TPJMSStreamMessageTest
 		assertEquals(2, bytes[0]);
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteBytesPartialNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteBytesPartialNotWritable() throws JMSException {
 		message.reset();
 		message.writeBytes(new byte[] { 1, 2 }, 0, 1);
 	}
 
 	@Test
-	public void testWriteChar() throws JMSException
-	{
+	public void testWriteChar() throws JMSException {
 		message.writeChar('A');
 		message.reset();
 		assertEquals('A', message.readChar());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteCharNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteCharNotWritable() throws JMSException {
 		message.reset();
 		message.writeChar('A');
 	}
 
 	@Test
-	public void testWriteDouble() throws JMSException
-	{
+	public void testWriteDouble() throws JMSException {
 		message.writeDouble(1.0d);
 		message.reset();
 		assertEquals(1.0d, message.readDouble(), 0.01d);
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteDoubleNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteDoubleNotWritable() throws JMSException {
 		message.reset();
 		message.writeDouble(1.0d);
 	}
 
 	@Test
-	public void testWriteFloat() throws JMSException
-	{
+	public void testWriteFloat() throws JMSException {
 		message.writeFloat(1.0f);
 		message.reset();
 		assertEquals(1.0f, message.readFloat(), 0.01f);
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteFloatNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteFloatNotWritable() throws JMSException {
 		message.reset();
 		message.writeFloat(1.0f);
 	}
 
 	@Test
-	public void testWriteInt() throws JMSException
-	{
+	public void testWriteInt() throws JMSException {
 		message.writeInt(1);
 		message.reset();
 		assertEquals(1, message.readInt());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteIntNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteIntNotWritable() throws JMSException {
 		message.reset();
 		message.writeInt(1);
 	}
 
 	@Test
-	public void testWriteLong() throws JMSException
-	{
+	public void testWriteLong() throws JMSException {
 		message.writeLong(1L);
 		message.reset();
 		assertEquals(1L, message.readLong());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteLongNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteLongNotWritable() throws JMSException {
 		message.reset();
 		message.writeLong(1L);
 	}
 
 	@Test
-	public void testWriteObject() throws JMSException
-	{
+	public void testWriteObject() throws JMSException {
 		message.writeObject(null);
 		message.writeObject(true);
 		message.writeObject((byte) 1);
@@ -525,31 +474,27 @@ public class TPJMSStreamMessageTest
 		assertEquals(2, data[1]);
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteObjectNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteObjectNotWritable() throws JMSException {
 		message.reset();
 		message.writeObject(null);
 	}
-	
+
 	@Test
-	public void testWriteShort() throws JMSException
-	{
+	public void testWriteShort() throws JMSException {
 		message.writeShort((short) 1);
 		message.reset();
 		assertEquals((short) 1, message.readShort());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteShortNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteShortNotWritable() throws JMSException {
 		message.reset();
 		message.writeShort((short) 1);
 	}
 
 	@Test
-	public void testWriteString() throws JMSException
-	{
+	public void testWriteString() throws JMSException {
 		message.writeString(null);
 		message.writeString("true");
 		message.writeString("1");
@@ -571,9 +516,8 @@ public class TPJMSStreamMessageTest
 		assertEquals("TEST", message.readString());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testWriteStringNotWritable() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testWriteStringNotWritable() throws JMSException {
 		message.reset();
 		message.writeString(null);
 	}

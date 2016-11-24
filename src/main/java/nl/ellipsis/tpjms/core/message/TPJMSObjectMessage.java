@@ -5,14 +5,14 @@ import java.io.*;
 import javax.jms.*;
 
 /**
- * TinyJms implementation of {@link ObjectMessage}.
+ * TinTPJMSyJms implementation of {@link ObjectMessage}.
  */
 public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage {
 	private byte[] body;
 	private boolean readOnly = false;
 
-	public TPJMSObjectMessage() {
-		super();
+	public TPJMSObjectMessage(Session session) {
+		super(session);
 	}
 
 	/**
@@ -92,15 +92,17 @@ public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage {
 	@Override
 	public void setObject(Serializable object) throws JMSException {
 		if(readOnly) {
-			throw new JMSException("Message is readonly");
+			throw new MessageNotWriteableException("Message is readonly");
 		}
 		this.body = toByteArray(object);
 	}
 	
 	/**
 	 * Object to byte array
+	 * 
+	 * @throws MessageFormatException 
 	 */
-	private static byte[] toByteArray(Serializable object) {
+	private static byte[] toByteArray(Serializable object) throws MessageFormatException {
 		if(object == null) {
 			return null;
 		}
@@ -113,7 +115,7 @@ public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage {
             oos.writeObject(object);
             bytes = bos.toByteArray();
 	    } catch (IOException e) {
-	        throw new IllegalArgumentException("Cannot serialize object : "+e.toString());
+	        throw new MessageFormatException("Cannot serialize object : "+e.toString());
 		} finally {
 			if (oos != null) {
 				try {
@@ -131,9 +133,9 @@ public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage {
 	
 	/**
 	 * Byte array to object
-	 * @throws JMSException 
+	 * @throws MessageFormatException 
 	 */
-	private static Serializable fromByteArray(byte[] bytes) throws JMSException {
+	private static Serializable fromByteArray(byte[] bytes) throws MessageFormatException {
 		if(bytes == null) {
 			return null;
 		}
@@ -146,7 +148,7 @@ public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage {
 			ois = new ObjectInputStream(bis);
 			return (Serializable) ois.readObject();
 		} catch (Exception e) {
-			throw new JMSException("Unable to deserialize object: " + e.getMessage());
+			throw new MessageFormatException("Unable to deserialize object: " + e.getMessage());
 		} finally {
 			if (ois != null) {
 				try {

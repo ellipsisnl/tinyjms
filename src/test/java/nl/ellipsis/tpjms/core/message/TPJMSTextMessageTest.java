@@ -9,48 +9,44 @@ import javax.jms.*;
 import org.junit.*;
 
 import nl.ellipsis.tpjms.core.message.TPJMSTextMessage;
+import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
-public class TPJMSTextMessageTest
-{
+public class TPJMSTextMessageTest {
+	private VmProvider vmProvider;
 	private TPJMSTextMessage message;
-	
+
 	@Before
-	public void setUp() throws Exception
-	{
-		message = new TPJMSTextMessage();
+	public void setUp() throws Exception {
+		vmProvider = VmProvider.getInstance();
+		message = new TPJMSTextMessage(vmProvider.createSession());
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		message = null;
 	}
 
 	@Test
-	public void testNullText() throws JMSException
-	{
+	public void testNullText() throws JMSException {
 		assertNull(message.getText());
 		message.setText(null);
 		assertNull(message.getText());
 	}
 
 	@Test
-	public void testText() throws JMSException
-	{
+	public void testText() throws JMSException {
 		message.setText("TEST");
 		assertEquals("TEST", message.getText());
 	}
 
-	@Test(expected=MessageNotWriteableException.class)
-	public void testReadOnly() throws JMSException
-	{
+	@Test(expected = MessageNotWriteableException.class)
+	public void testReadOnly() throws JMSException {
 		message.setReadOnly(true);
 		message.setText("TEST");
 	}
 
 	@Test
-	public void testClearBody() throws JMSException
-	{
+	public void testClearBody() throws JMSException {
 		message.setReadOnly(false);
 		message.setText("TEST");
 		message.clearBody();
@@ -58,16 +54,15 @@ public class TPJMSTextMessageTest
 	}
 
 	@Test
-	public void testBody() throws JMSException
-	{
+	public void testBody() throws JMSException {
 		assertNull(message.getBody());
 		message.setBody("TEST".getBytes(Charset.forName("UTF-8")));
-		assertEquals("TEST", new String(message.getBody(), Charset.forName("UTF-8")));
+		assertEquals("TEST",
+				new String(message.getBody(), Charset.forName("UTF-8")));
 	}
 
 	@Test
-	public void testClearBodyReadOnly() throws JMSException
-	{
+	public void testClearBodyReadOnly() throws JMSException {
 		message.setReadOnly(true);
 		message.clearBody();
 		message.setText("TEST");

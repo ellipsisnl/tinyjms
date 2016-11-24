@@ -8,68 +8,57 @@ import org.junit.*;
 
 import nl.ellipsis.tpjms.core.connection.TPJMSConnectionMetaData;
 
-public class TPJMSConnectionMetaDataTest
-{
+public class TPJMSConnectionMetaDataTest {
 	private TPJMSConnectionMetaData meta;
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		meta = new TPJMSConnectionMetaData();
 	}
 
 	@After
-	public void tearDown()
-	{
+	public void tearDown() {
 		meta = null;
 	}
 
 	@Test
-	public void testGetJMSMajorVersion()
-	{
+	public void testGetJMSMajorVersion() {
 		assertEquals(1, meta.getJMSMajorVersion());
 	}
 
 	@Test
-	public void testGetJMSMinorVersion()
-	{
+	public void testGetJMSMinorVersion() {
 		assertEquals(1, meta.getJMSMinorVersion());
 	}
 
 	@Test
-	public void testGetJMSProviderName()
-	{
-		assertEquals("TinyJms", meta.getJMSProviderName());
+	public void testGetJMSProviderName() {
+		assertEquals("TPJMS", meta.getJMSProviderName());
 	}
 
 	@Test
-	public void testGetJMSVersion()
-	{
+	public void testGetJMSVersion() {
 		assertEquals("1.1.1", meta.getJMSVersion());
 	}
 
 	@Test
-	public void testGetJMSXPropertyNames()
-	{
+	public void testGetJMSXPropertyNames() {
 		Enumeration props = meta.getJMSXPropertyNames();
 		assertFalse(props.hasMoreElements());
 	}
 
 	@Test
-	public void testGetProviderMajorVersion()
-	{
+	public void testGetProviderMajorVersion() {
 		assertEquals(1, meta.getProviderMajorVersion());
 	}
 
 	@Test
-	public void testGetProviderMinorVersion()
-	{
+	public void testGetProviderMinorVersion() {
 		assertEquals(0, meta.getProviderMinorVersion());
 	}
 
 	@Test
-	public void testGetProviderVersion()
-	{
+	public void testGetProviderVersion() {
 		assertEquals("1.0-SNAPSHOT", meta.getProviderVersion());
 	}
 }

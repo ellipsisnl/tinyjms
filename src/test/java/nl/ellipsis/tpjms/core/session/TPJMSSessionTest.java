@@ -23,298 +23,256 @@ import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
 import org.junit.*;
 
-public class TPJMSSessionTest
-{
+public class TPJMSSessionTest {
 	private TPJMSConnection con;
 	private TPJMSSession session;
-	
+
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		VmProvider.getInstance().removeBroker("test");
 
 		TPJMSConnectionFactory factory = new TPJMSConnectionFactory("vm://test");
-		con = (TPJMSConnection) factory.createConnection();		
-		session = (TPJMSSession) con.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		con = (TPJMSConnection) factory.createConnection();
+		session = (TPJMSSession) con.createSession(false,
+				Session.AUTO_ACKNOWLEDGE);
 	}
-	
+
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 		session.close();
 		session = null;
 		con.close();
 		con = null;
-		
+
 		VmProvider.getInstance().removeBroker("test");
 	}
-	
+
 	@Test
-	public void testClose() throws JMSException
-	{
+	public void testClose() throws JMSException {
 		session.close();
 	}
-	
+
 	@Test
-	public void testCommit()
-	{
+	public void testCommit() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateBrowserQueue()
-	{
+	public void testCreateBrowserQueue() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateBrowserQueueString()
-	{
+	public void testCreateBrowserQueueString() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateBytesMessage() throws JMSException
-	{
+	public void testCreateBytesMessage() throws JMSException {
 		BytesMessage message = session.createBytesMessage();
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSBytesMessage);
 	}
-	
+
 	@Test
-	public void testCreateConsumerDestination()
-	{
+	public void testCreateConsumerDestination() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateConsumerDestinationString()
-	{
+	public void testCreateConsumerDestinationString() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateConsumerDestinationStringBoolean()
-	{
+	public void testCreateConsumerDestinationStringBoolean() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateDurableSubscriberTopicString()
-	{
+	public void testCreateDurableSubscriberTopicString() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateDurableSubscriberTopicStringStringBoolean()
-	{
+	public void testCreateDurableSubscriberTopicStringStringBoolean() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testCreateMapMessage() throws JMSException
-	{
+	public void testCreateMapMessage() throws JMSException {
 		MapMessage message = session.createMapMessage();
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSMapMessage);
 	}
-	
+
 	@Test
-	public void testCreateMessage() throws JMSException
-	{
+	public void testCreateMessage() throws JMSException {
 		Message message = session.createMessage();
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSMessage);
 	}
-	
+
 	@Test
-	public void testCreateObjectMessage() throws JMSException
-	{
+	public void testCreateObjectMessage() throws JMSException {
 		ObjectMessage message = session.createObjectMessage();
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSObjectMessage);
 		assertNull(message.getObject());
 	}
-	
+
 	@Test
-	public void testCreateObjectMessageWithData() throws JMSException
-	{
+	public void testCreateObjectMessageWithData() throws JMSException {
 		Serializable obj = new String("TEST");
 		ObjectMessage message = session.createObjectMessage(obj);
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSObjectMessage);
-		assertSame(obj, message.getObject());
+		assertEquals(obj, message.getObject());
 	}
-	
+
 	@Test
-	public void testCreateProducer() throws JMSException
-	{
+	public void testCreateProducer() throws JMSException {
 		Queue queue = session.createQueue("TEST-QUEUE");
 		MessageProducer prod = null;
 
-		try
-		{
+		try {
 			prod = session.createProducer(queue);
 			assertNotNull(prod);
 			assertSame(queue, prod.getDestination());
-		}
-		finally
-		{
+		} finally {
 			if (prod != null)
 				prod.close();
 		}
 	}
 
 	@Test
-	public void testCreateProducerNoDestination() throws JMSException
-	{
+	public void testCreateProducerNoDestination() throws JMSException {
 		MessageProducer prod = null;
 
-		try
-		{
+		try {
 			prod = session.createProducer(null);
 			assertNotNull(prod);
 			assertNull(prod.getDestination());
-		}
-		finally
-		{
+		} finally {
 			if (prod != null)
 				prod.close();
 		}
 	}
 
 	@Test
-	public void testCreateQueue() throws JMSException
-	{
-		Queue queue = session.createQueue("TEST-QUEUE");
+	public void testCreateQueue() throws JMSException {
+		String queueName = "TEST-QUEUE";
+		Queue queue = session.createQueue(queueName);
 		assertNotNull(queue);
 		assertTrue(queue instanceof TPJMSQueue);
-		assertEquals("TEST-QUEUE", queue.getQueueName());
+		assertEquals(queueName, queue.getQueueName());
 	}
-	
+
 	@Test
-	public void testCreateStreamMessage() throws JMSException
-	{
+	public void testCreateStreamMessage() throws JMSException {
 		StreamMessage message = session.createStreamMessage();
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSStreamMessage);
 	}
-	
+
 	@Test
-	public void testCreateTemporaryQueue() throws JMSException
-	{
+	public void testCreateTemporaryQueue() throws JMSException {
 		TemporaryQueue queue = null;
-		try
-		{
+		try {
 			queue = session.createTemporaryQueue();
 			assertNotNull(queue);
 			assertTrue(queue instanceof TPJMSTemporaryQueue);
 			assertNotNull(queue.getQueueName());
-		}
-		finally
-		{
+		} finally {
 			if (queue != null)
 				queue.delete();
 		}
 	}
-	
+
 	@Test
-	public void testCreateTemporaryTopic() throws JMSException
-	{
+	public void testCreateTemporaryTopic() throws JMSException {
 		TemporaryTopic topic = null;
-		try
-		{
+		try {
 			topic = session.createTemporaryTopic();
 			assertNotNull(topic);
 			assertTrue(topic instanceof TPJMSTemporaryTopic);
 			assertNotNull(topic.getTopicName());
-		}
-		finally
-		{
+		} finally {
 			if (topic != null)
 				topic.delete();
 		}
 	}
-	
+
 	@Test
-	public void testCreateTextMessage() throws JMSException
-	{
+	public void testCreateTextMessage() throws JMSException {
 		TextMessage message = session.createTextMessage();
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSTextMessage);
 		assertNull(message.getText());
 	}
-	
+
 	@Test
-	public void testCreateTextMessageWithBody() throws JMSException
-	{
+	public void testCreateTextMessageWithBody() throws JMSException {
 		TextMessage message = session.createTextMessage("TEXT");
 		assertNotNull(message);
 		assertTrue(message instanceof TPJMSTextMessage);
 		assertEquals("TEXT", message.getText());
 	}
-	
+
 	@Test
-	public void testCreateTopic() throws JMSException
-	{
+	public void testCreateTopic() throws JMSException {
 		Topic topic = session.createTopic("TOPIC-NAME");
 		assertNotNull(topic);
 		assertTrue(topic instanceof TPJMSTopic);
 		assertEquals("TOPIC-NAME", topic.getTopicName());
 	}
-	
+
 	@Test
-	public void testGetAcknowledgeMode() throws JMSException
-	{
+	public void testGetAcknowledgeMode() throws JMSException {
 		assertEquals(Session.AUTO_ACKNOWLEDGE, session.getAcknowledgeMode());
 		session.close();
-		session = (TPJMSSession) con.createSession(true, Session.AUTO_ACKNOWLEDGE);
+		session = (TPJMSSession) con.createSession(true,
+				Session.AUTO_ACKNOWLEDGE);
 		assertEquals(Session.SESSION_TRANSACTED, session.getAcknowledgeMode());
 	}
-	
+
 	@Test
-	public void testGetMessageListener()
-	{
+	public void testGetMessageListener() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testGetTransacted() throws JMSException
-	{
-		assertFalse(session.getTransacted());		
+	public void testGetTransacted() throws JMSException {
+		assertFalse(session.getTransacted());
 		session.close();
-		session = (TPJMSSession) con.createSession(true, Session.SESSION_TRANSACTED);
+		session = (TPJMSSession) con.createSession(true,
+				Session.SESSION_TRANSACTED);
 		assertTrue(session.getTransacted());
 	}
-	
+
 	@Test
-	public void testRecover()
-	{
+	public void testRecover() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testRollback()
-	{
+	public void testRollback() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testRun()
-	{
+	public void testRun() {
 		session.run();
 	}
-	
+
 	@Test
-	public void testSetMessageListener()
-	{
+	public void testSetMessageListener() {
 		fail("Not yet implemented");
 	}
-	
+
 	@Test
-	public void testUnsubscribe()
-	{
+	public void testUnsubscribe() {
 		fail("Not yet implemented");
 	}
-	
+
 }

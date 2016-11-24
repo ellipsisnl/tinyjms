@@ -44,6 +44,7 @@ import javax.jms.Topic;
  * @see javax.jms.Session
  */
 public class TPJMSMessageConsumer implements MessageConsumer {
+	private String messageConsumerId;
 	private Destination destination;
 	private String messageSelector;
 	private MessageListener messageListener;

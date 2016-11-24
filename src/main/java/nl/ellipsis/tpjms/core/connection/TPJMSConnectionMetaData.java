@@ -6,14 +6,14 @@ import java.util.*;
 import javax.jms.ConnectionMetaData;
 
 /**
- * TinyJms implementation of {@link ConnectionMetaData}.
+ * TPJMS implementation of {@link ConnectionMetaData}.
  */
-public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
-{
+public class TPJMSConnectionMetaData implements ConnectionMetaData,
+		Serializable {
 	private static final long serialVersionUID = -470922197998456034L;
 
-	protected TPJMSConnectionMetaData()
-	{}
+	protected TPJMSConnectionMetaData() {
+	}
 
 	/**
 	 * Gets the JMS major version number.
@@ -21,8 +21,7 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return the JMS API major version number
 	 */
 	@Override
-	public int getJMSMajorVersion()
-	{
+	public int getJMSMajorVersion() {
 		return 1;
 	}
 
@@ -32,8 +31,7 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return the JMS API minor version number
 	 */
 	@Override
-	public int getJMSMinorVersion()
-	{
+	public int getJMSMinorVersion() {
 		return 1;
 	}
 
@@ -43,9 +41,8 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return the JMS provider name
 	 */
 	@Override
-	public String getJMSProviderName()
-	{
-		return "TinyJms";
+	public String getJMSProviderName() {
+		return "TPJMS";
 	}
 
 	/**
@@ -54,8 +51,7 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return the JMS API version
 	 */
 	@Override
-	public String getJMSVersion()
-	{
+	public String getJMSVersion() {
 		return "1.1.1";
 	}
 
@@ -65,8 +61,7 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return an Enumeration of JMSX property names
 	 */
 	@Override
-	public Enumeration getJMSXPropertyNames()
-	{
+	public Enumeration getJMSXPropertyNames() {
 		return Collections.enumeration(Collections.emptyList());
 	}
 
@@ -76,8 +71,7 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return the JMS provider major version number
 	 */
 	@Override
-	public int getProviderMajorVersion()
-	{
+	public int getProviderMajorVersion() {
 		return 1;
 	}
 
@@ -87,8 +81,7 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return the JMS provider minor version number
 	 */
 	@Override
-	public int getProviderMinorVersion()
-	{
+	public int getProviderMinorVersion() {
 		return 0;
 	}
 
@@ -98,8 +91,7 @@ public class TPJMSConnectionMetaData implements ConnectionMetaData, Serializable
 	 * @return the JMS provider version
 	 */
 	@Override
-	public String getProviderVersion()
-	{
+	public String getProviderVersion() {
 		return "1.0-SNAPSHOT";
 	}
 }

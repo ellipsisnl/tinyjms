@@ -4,22 +4,20 @@ import java.util.UUID;
 
 import nl.ellipsis.tpjms.provider.TPJMSConnectionContext;
 
-public class VmConnectionContext implements TPJMSConnectionContext
-{
+public class VmConnectionContext implements TPJMSConnectionContext {
 	private final String brokerName;
 	private final String brokerId;
 	private final String connectionId;
-	
+
 	/**
 	 * Creates a new VM connection context.
 	 * 
 	 * @param brokerName
-	 *          broker name
+	 *            broker name
 	 * @param brokerId
-	 *          unique identifier
+	 *            unique identifier
 	 */
-	public VmConnectionContext(String brokerName, String brokerId)
-	{
+	public VmConnectionContext(String brokerName, String brokerId) {
 		this.brokerName = brokerName;
 		this.brokerId = brokerId;
 		this.connectionId = UUID.randomUUID().toString();
@@ -30,8 +28,7 @@ public class VmConnectionContext implements TPJMSConnectionContext
 	 * 
 	 * @return broker name
 	 */
-	public String getBrokerName()
-	{
+	public String getBrokerName() {
 		return brokerName;
 	}
 
@@ -40,8 +37,7 @@ public class VmConnectionContext implements TPJMSConnectionContext
 	 * 
 	 * @return broker ID
 	 */
-	public String getBrokerId()
-	{
+	public String getBrokerId() {
 		return brokerId;
 	}
 
@@ -50,14 +46,12 @@ public class VmConnectionContext implements TPJMSConnectionContext
 	 * 
 	 * @return connection ID
 	 */
-	public String getConnectionId()
-	{
+	public String getConnectionId() {
 		return connectionId;
 	}
-	
+
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "vm:" + brokerName + ":" + connectionId;
 	}
 }

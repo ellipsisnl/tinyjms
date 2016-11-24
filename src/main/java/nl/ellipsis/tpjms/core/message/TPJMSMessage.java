@@ -4,12 +4,16 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 import javax.jms.*;
+
+import nl.ellipsis.tpjms.core.destination.TPJMSDestination;
+import nl.ellipsis.tpjms.util.AcknowledgeCallback;
+
 import org.apache.logging.log4j.*;
 
-public class TPJMSMessage implements Message
-{
-	private static final Logger logger = LogManager.getLogger(TPJMSMessage.class);
-	
+public class TPJMSMessage implements Message {
+	private static final Logger logger = LogManager
+			.getLogger(TPJMSMessage.class);
+
 	/* Properties */
 	private final Map<String, Object> properties = new HashMap<String, Object>();
 
@@ -22,21 +26,58 @@ public class TPJMSMessage implements Message
 	private long timestamp = 0;
 	private boolean redelivered = false;
 	private String type = null;
-	
+
+	private Session session;
+
 	/* Destinations */
 	private Destination destination;
 	private Destination replyTo;
-	
+
 	/* State */
 	private boolean propertiesReadOnly = false;
-	
-	public TPJMSMessage() {}
 
+	private AcknowledgeCallback acknowledgeCallback;
+
+	public TPJMSMessage(Session session) {
+		this.session = session;
+	}
+
+	/**
+	 * Acknowledges all consumed messages of the session of this consumed
+	 * message. All consumed JMS messages support the acknowledge method for use
+	 * when a client has specified that its JMS session's consumed messages are
+	 * to be explicitly acknowledged. By invoking acknowledge on a consumed
+	 * message, a client acknowledges all messages consumed by the session that
+	 * the message was delivered to.
+	 * 
+	 * Calls to acknowledge are ignored for both transacted sessions and
+	 * sessions specified to use implicit acknowledgement modes.
+	 * 
+	 * A client may individually acknowledge each message as it is consumed, or
+	 * it may choose to acknowledge messages as an application-defined group
+	 * (which is done by calling acknowledge on the last received message of the
+	 * group, thereby acknowledging all messages consumed by the session.)
+	 * 
+	 * Messages that have been received but not acknowledged may be redelivered.
+	 * 
+	 * @throws JMSException
+	 *             - if the JMS provider fails to acknowledge the messages due
+	 *             to some internal error.
+	 * @throws IllegalStateException
+	 *             - if this method is called on a closed session.
+	 * 
+	 * @see javax.jms.Message#acknowledge()
+	 * @see javax.jms.Session#CLIENT_ACKNOWLEDGE
+	 */
 	@Override
-	public void acknowledge() throws JMSException
-	{
-		// TODO Auto-generated method stub
-		logger.warn("acknowledge() not implemented");
+	public void acknowledge() throws JMSException {
+		// we need a callback where we send the acknowledge-message to
+		if (acknowledgeCallback != null) {
+			if (destination instanceof TPJMSDestination) {
+				acknowledgeCallback.notify(
+						((TPJMSDestination) destination).getName(), messageID);
+			}
+		}
 	}
 
 	/**
@@ -44,29 +85,30 @@ public class TPJMSMessage implements Message
 	 * header values or property entries.
 	 * 
 	 * <p>
-	 * If this message body was read-only, calling this method leaves the message
-	 * body in the same state as an empty body in a newly created message.
+	 * If this message body was read-only, calling this method leaves the
+	 * message body in the same state as an empty body in a newly created
+	 * message.
 	 * </p>
 	 * 
 	 * @throws JMSException
-	 *           if the JMS provider fails to clear the message body due to some
-	 *           internal error.
+	 *             if the JMS provider fails to clear the message body due to
+	 *             some internal error.
 	 */
 	@Override
-	public void clearBody() throws JMSException
-	{}
+	public void clearBody() throws JMSException {
+	}
 
 	/**
 	 * Sets the content of the body as a byte array. Subclasses should override
 	 * this method to provide efficient deserialization of message bodies.
 	 * 
 	 * @param data
-	 *          byte array (may be <code>null</code>) of data to set.
+	 *            byte array (may be <code>null</code>) of data to set.
 	 * @throws JMSException
-	 *           if an error occurs
+	 *             if an error occurs
 	 */
-	void setBody(byte[] data) throws JMSException
-	{}
+	void setBody(byte[] data) throws JMSException {
+	}
 
 	/**
 	 * Gets the content of the body as a byte array. Subclasses should override
@@ -74,13 +116,12 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return byte array (may be <code>null</code>)
 	 * @throws JMSException
-	 *           if an error occurs
+	 *             if an error occurs
 	 */
-	byte[] getBody() throws JMSException
-	{
+	byte[] getBody() throws JMSException {
 		return null;
 	}
-	
+
 	/**
 	 * Clears a message's properties.
 	 * 
@@ -89,12 +130,11 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @throws JMSException
-	 *           if the JMS provider fails to clear the message properties due to
-	 *           some internal error.
+	 *             if the JMS provider fails to clear the message properties due
+	 *             to some internal error.
 	 */
 	@Override
-	public void clearProperties() throws JMSException
-	{
+	public void clearProperties() throws JMSException {
 		properties.clear();
 		propertiesReadOnly = false;
 	}
@@ -103,163 +143,155 @@ public class TPJMSMessage implements Message
 	 * Returns the value of the boolean property with the specified name.
 	 * 
 	 * @param name
-	 *          the name of the boolean property
+	 *            the name of the boolean property
 	 * @return the boolean property value for the specified name
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public boolean getBooleanProperty(String name) throws JMSException
-	{
+	public boolean getBooleanProperty(String name) throws JMSException {
 		Object value = properties.get(name);
 
-		if (value == null || value instanceof String)
-		{
+		if (value == null || value instanceof String) {
 			return Boolean.valueOf((String) value);
 		}
 
-		if (value instanceof Boolean)
-		{
+		if (value instanceof Boolean) {
 			return (Boolean) value;
 		}
-		
-		throw new MessageFormatException("Unsupported conversion to boolean from type: " + value.getClass().getName());
+
+		throw new MessageFormatException(
+				"Unsupported conversion to boolean from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
 	 * Returns the value of the byte property with the specified name.
 	 * 
 	 * @param name
-	 *          the name of the byte property
+	 *            the name of the byte property
 	 * @return the byte property value for the specified name
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public byte getByteProperty(String name) throws JMSException
-	{
+	public byte getByteProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		if (value instanceof Byte)
-		{
+		if (value instanceof Byte) {
 			return (Byte) value;
 		}
-		
-		if (value == null || value instanceof String)
-		{
+
+		if (value == null || value instanceof String) {
 			return Byte.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Unsupported conversion to byte from type: " + value.getClass().getName());
+		throw new MessageFormatException(
+				"Unsupported conversion to byte from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
 	 * Returns the value of the double property with the specified name.
 	 * 
 	 * @param name
-	 *          the name of the double property
+	 *            the name of the double property
 	 * @return the double property value for the specified name
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public double getDoubleProperty(String name) throws JMSException
-	{
+	public double getDoubleProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		if (value instanceof Double)
-		{
+		if (value instanceof Double) {
 			return (Double) value;
 		}
-		
-		if (value instanceof Float)
-		{
+
+		if (value instanceof Float) {
 			return (Float) value;
 		}
-		
-		if (value == null || value instanceof String)
-		{
+
+		if (value == null || value instanceof String) {
 			return Double.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Unsupported conversion to double from type: " + value.getClass().getName());
+		throw new MessageFormatException(
+				"Unsupported conversion to double from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
 	 * Returns the value of the float property with the specified name.
 	 * 
 	 * @param name
-	 *          the name of the float property
+	 *            the name of the float property
 	 * @return the float property value for the specified name
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public float getFloatProperty(String name) throws JMSException
-	{
+	public float getFloatProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		
-		if (value instanceof Float)
-		{
+
+		if (value instanceof Float) {
 			return (Float) value;
 		}
-		
-		if (value == null || value instanceof String)
-		{
+
+		if (value == null || value instanceof String) {
 			return Float.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Unsupported conversion to float from type: " + value.getClass().getName());
+		throw new MessageFormatException(
+				"Unsupported conversion to float from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
 	 * Returns the value of the int property with the specified name.
 	 * 
 	 * @param name
-	 *          the name of the int property
+	 *            the name of the int property
 	 * @return the int property value for the specified name
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public int getIntProperty(String name) throws JMSException
-	{
+	public int getIntProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		
-		if (value instanceof Integer)
-		{
+
+		if (value instanceof Integer) {
 			return (Integer) value;
 		}
 
-		if (value instanceof Short)
-		{
+		if (value instanceof Short) {
 			return (Short) value;
 		}
 
-		if (value instanceof Byte)
-		{
+		if (value instanceof Byte) {
 			return (Byte) value;
 		}
 
-		if (value == null || value instanceof String)
-		{
+		if (value == null || value instanceof String) {
 			return Integer.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Unsupported conversion to int from type: " + value.getClass().getName());
+		throw new MessageFormatException(
+				"Unsupported conversion to int from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
@@ -273,15 +305,14 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return the correlation ID of a message as a String
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the correlation ID due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the correlation ID due to
+	 *             some internal error.
 	 * @see #setJMSCorrelationID(String)
 	 * @see #getJMSCorrelationIDAsBytes()
 	 * @see #setJMSCorrelationIDAsBytes(byte[])
 	 */
 	@Override
-	public String getJMSCorrelationID() throws JMSException
-	{
+	public String getJMSCorrelationID() throws JMSException {
 		return correlationID;
 	}
 
@@ -294,16 +325,16 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return the correlation ID of a message as an array of bytes
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the correlation ID due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the correlation ID due to
+	 *             some internal error.
 	 * @see #setJMSCorrelationID(String)
 	 * @see #getJMSCorrelationID()
 	 * @see #setJMSCorrelationIDAsBytes(byte[])
 	 */
 	@Override
-	public byte[] getJMSCorrelationIDAsBytes() throws JMSException
-	{
-		return (correlationID == null) ? null : correlationID.getBytes(Charset.forName("UTF-8"));
+	public byte[] getJMSCorrelationIDAsBytes() throws JMSException {
+		return (correlationID == null) ? null : correlationID.getBytes(Charset
+				.forName("UTF-8"));
 	}
 
 	/**
@@ -311,14 +342,13 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return the delivery mode for this message
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the delivery mode due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the delivery mode due to
+	 *             some internal error.
 	 * @see #setJMSDeliveryMode(int)
 	 * @see DeliveryMode
 	 */
 	@Override
-	public int getJMSDeliveryMode() throws JMSException
-	{
+	public int getJMSDeliveryMode() throws JMSException {
 		return deliveryMode;
 	}
 
@@ -331,8 +361,9 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * <p>
-	 * When a message is sent, this field is ignored. After completion of the send
-	 * or publish method, the field holds the destination specified by the method.
+	 * When a message is sent, this field is ignored. After completion of the
+	 * send or publish method, the field holds the destination specified by the
+	 * method.
 	 * </p>
 	 * 
 	 * <p>
@@ -342,13 +373,12 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return the destination of this message
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the destination due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the destination due to some
+	 *             internal error.
 	 * @see #setJMSDestination(Destination)
 	 */
 	@Override
-	public Destination getJMSDestination() throws JMSException
-	{
+	public Destination getJMSDestination() throws JMSException {
 		return destination;
 	}
 
@@ -356,10 +386,10 @@ public class TPJMSMessage implements Message
 	 * Gets the message's expiration value.
 	 * 
 	 * <p>
-	 * When a message is sent, the JMSExpiration header field is left unassigned.
-	 * After completion of the send or publish method, it holds the expiration
-	 * time of the message. This is the sum of the time-to-live value specified by
-	 * the client and the GMT at the time of the send or publish.
+	 * When a message is sent, the JMSExpiration header field is left
+	 * unassigned. After completion of the send or publish method, it holds the
+	 * expiration time of the message. This is the sum of the time-to-live value
+	 * specified by the client and the GMT at the time of the send or publish.
 	 * </p>
 	 * 
 	 * <p>
@@ -368,25 +398,26 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * <p>
-	 * When a message's expiration time is reached, a provider should discard it.
-	 * The JMS API does not define any form of notification of message expiration.
+	 * When a message's expiration time is reached, a provider should discard
+	 * it. The JMS API does not define any form of notification of message
+	 * expiration.
 	 * </p>
 	 * 
 	 * <p>
-	 * Clients should not receive messages that have expired; however, the JMS API
-	 * does not guarantee that this will not happen.
+	 * Clients should not receive messages that have expired; however, the JMS
+	 * API does not guarantee that this will not happen.
 	 * </p>
 	 * 
-	 * @return the time the message expires, which is the sum of the time-to-live
-	 *         value specified by the client and the GMT at the time of the send
+	 * @return the time the message expires, which is the sum of the
+	 *         time-to-live value specified by the client and the GMT at the
+	 *         time of the send
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the message expiration due to
-	 *           some internal error.
+	 *             if the JMS provider fails to get the message expiration due
+	 *             to some internal error.
 	 * @see #setJMSExpiration(long)
 	 */
 	@Override
-	public long getJMSExpiration() throws JMSException
-	{
+	public long getJMSExpiration() throws JMSException {
 		return expiration;
 	}
 
@@ -406,8 +437,8 @@ public class TPJMSMessage implements Message
 	 * <p>
 	 * A JMSMessageID is a String value that should function as a unique key for
 	 * identifying messages in a historical repository. The exact scope of
-	 * uniqueness is provider-defined. It should at least cover all messages for a
-	 * specific installation of a provider, where an installation is some
+	 * uniqueness is provider-defined. It should at least cover all messages for
+	 * a specific installation of a provider, where an installation is some
 	 * connected set of message routers.
 	 * </p>
 	 * 
@@ -417,26 +448,25 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * <p>
-	 * Since message IDs take some effort to create and increase a message's size,
-	 * some JMS providers may be able to optimize message overhead if they are
-	 * given a hint that the message ID is not used by an application. By calling
-	 * the MessageProducer.setDisableMessageID method, a JMS client enables this
-	 * potential optimization for all messages sent by that message producer. If
-	 * the JMS provider accepts this hint, these messages must have the message ID
-	 * set to null; if the provider ignores the hint, the message ID must be set
-	 * to its normal unique value.
+	 * Since message IDs take some effort to create and increase a message's
+	 * size, some JMS providers may be able to optimize message overhead if they
+	 * are given a hint that the message ID is not used by an application. By
+	 * calling the MessageProducer.setDisableMessageID method, a JMS client
+	 * enables this potential optimization for all messages sent by that message
+	 * producer. If the JMS provider accepts this hint, these messages must have
+	 * the message ID set to null; if the provider ignores the hint, the message
+	 * ID must be set to its normal unique value.
 	 * </p>
 	 * 
 	 * @return the message ID
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the message ID due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the message ID due to some
+	 *             internal error.
 	 * @see #setJMSMessageID(String)
 	 * @see MessageProducer#setDisableMessageID(boolean)
 	 */
 	@Override
-	public String getJMSMessageID() throws JMSException
-	{
+	public String getJMSMessageID() throws JMSException {
 		return messageID;
 	}
 
@@ -458,13 +488,12 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return the default message priority
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the message priority due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the message priority due to
+	 *             some internal error.
 	 * @see #setJMSPriority(int)
 	 */
 	@Override
-	public int getJMSPriority() throws JMSException
-	{
+	public int getJMSPriority() throws JMSException {
 		return priority;
 	}
 
@@ -479,13 +508,12 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return <code>true</code> if this message is being redelivered
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the redelivered state due to
-	 *           some internal error.
+	 *             if the JMS provider fails to get the redelivered state due to
+	 *             some internal error.
 	 * @see #setJMSRedelivered(boolean)
 	 */
 	@Override
-	public boolean getJMSRedelivered() throws JMSException
-	{
+	public boolean getJMSRedelivered() throws JMSException {
 		return redelivered;
 	}
 
@@ -496,13 +524,12 @@ public class TPJMSMessage implements Message
 	 * @return <code>Destination</code> to which to send a response to this
 	 *         message
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the JMSReplyTo destination due
-	 *           to some internal error.
+	 *             if the JMS provider fails to get the JMSReplyTo destination
+	 *             due to some internal error.
 	 * @see #setJMSReplyTo(Destination)
 	 */
 	@Override
-	public Destination getJMSReplyTo() throws JMSException
-	{
+	public Destination getJMSReplyTo() throws JMSException {
 		return replyTo;
 	}
 
@@ -510,40 +537,39 @@ public class TPJMSMessage implements Message
 	 * Gets the message timestamp.
 	 * 
 	 * <p>
-	 * The <code>JMSTimestamp</code> header field contains the time a message was
-	 * handed off to a provider to be sent. It is not the time the message was
-	 * actually transmitted, because the actual send may occur later due to
+	 * The <code>JMSTimestamp</code> header field contains the time a message
+	 * was handed off to a provider to be sent. It is not the time the message
+	 * was actually transmitted, because the actual send may occur later due to
 	 * transactions or other client-side queueing of messages.
 	 * </p>
 	 * 
 	 * <p>
-	 * When a message is sent, <code>JMSTimestamp</code> is ignored. When the send
-	 * or publish method returns, it contains a time value somewhere in the
+	 * When a message is sent, <code>JMSTimestamp</code> is ignored. When the
+	 * send or publish method returns, it contains a time value somewhere in the
 	 * interval between the call and the return. The value is in the format of a
 	 * normal millis time value in the Java programming language.
 	 * </p>
 	 * 
 	 * <p>
-	 * Since timestamps take some effort to create and increase a message's size,
-	 * some JMS providers may be able to optimize message overhead if they are
-	 * given a hint that the timestamp is not used by an application. By calling
-	 * the {@link MessageProducer#setDisableMessageTimestamp(boolean)} method, a
-	 * JMS client enables this potential optimization for all messages sent by
-	 * that message producer. If the JMS provider accepts this hint, these
-	 * messages must have the timestamp set to zero; if the provider ignores the
-	 * hint, the timestamp must be set to its normal value.
+	 * Since timestamps take some effort to create and increase a message's
+	 * size, some JMS providers may be able to optimize message overhead if they
+	 * are given a hint that the timestamp is not used by an application. By
+	 * calling the {@link MessageProducer#setDisableMessageTimestamp(boolean)}
+	 * method, a JMS client enables this potential optimization for all messages
+	 * sent by that message producer. If the JMS provider accepts this hint,
+	 * these messages must have the timestamp set to zero; if the provider
+	 * ignores the hint, the timestamp must be set to its normal value.
 	 * </p>
 	 * 
 	 * @return the message timestamp
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the timestamp due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the timestamp due to some
+	 *             internal error.
 	 * @see #setJMSTimestamp(long)
 	 * @see MessageProducer#setDisableMessageTimestamp(boolean)
 	 */
 	@Override
-	public long getJMSTimestamp() throws JMSException
-	{
+	public long getJMSTimestamp() throws JMSException {
 		return timestamp;
 	}
 
@@ -553,13 +579,12 @@ public class TPJMSMessage implements Message
 	 * 
 	 * @return the message type
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the message type due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the message type due to some
+	 *             internal error.
 	 * @see #setJMSType(String)
 	 */
 	@Override
-	public String getJMSType() throws JMSException
-	{
+	public String getJMSType() throws JMSException {
 		return type;
 	}
 
@@ -567,45 +592,41 @@ public class TPJMSMessage implements Message
 	 * Returns the value of the long property with the specified name.
 	 * 
 	 * @param name
-	 *          the name of the long property
+	 *            the name of the long property
 	 * @return the long property value for the specified name
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public long getLongProperty(String name) throws JMSException
-	{
+	public long getLongProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		
-		if (value instanceof Long)
-		{
+
+		if (value instanceof Long) {
 			return (Long) value;
 		}
 
-		if (value instanceof Integer)
-		{
+		if (value instanceof Integer) {
 			return (Integer) value;
 		}
 
-		if (value instanceof Short)
-		{
+		if (value instanceof Short) {
 			return (Short) value;
 		}
 
-		if (value instanceof Byte)
-		{
+		if (value instanceof Byte) {
 			return (Byte) value;
 		}
 
-		if (value == null || value instanceof String)
-		{
+		if (value == null || value instanceof String) {
 			return Long.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Unsupported conversion to long from type: " + value.getClass().getName());
+		throw new MessageFormatException(
+				"Unsupported conversion to long from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
@@ -614,70 +635,60 @@ public class TPJMSMessage implements Message
 	 * <p>
 	 * This method can be used to return, in objectified format, an object that
 	 * has been stored as a property in the message with the equivalent
-	 * setObjectProperty method call, or its equivalent primitive settypeProperty
-	 * method.
+	 * setObjectProperty method call, or its equivalent primitive
+	 * settypeProperty method.
 	 * </p>
 	 * 
 	 * @param name
-	 *          the name of the Java object property
+	 *            the name of the Java object property
 	 * @return the Java object property value with the specified name, in
-	 *         objectified format (for example, if the property was set as an int,
-	 *         an Integer is returned); if there is no property by this name, a
-	 *         null value is returned
+	 *         objectified format (for example, if the property was set as an
+	 *         int, an Integer is returned); if there is no property by this
+	 *         name, a null value is returned
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 */
 	@Override
-	public Object getObjectProperty(String name) throws JMSException
-	{
+	public Object getObjectProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		
-		if (value == null)
-		{
+
+		if (value == null) {
 			return null;
 		}
-		
-		if (value instanceof String)
-		{
+
+		if (value instanceof String) {
 			return value;
 		}
-		
-		if (value instanceof Double)
-		{
+
+		if (value instanceof Double) {
 			return value;
 		}
-		
-		if (value instanceof Float)
-		{
+
+		if (value instanceof Float) {
 			return value;
 		}
-		
-		if (value instanceof Long)
-		{
+
+		if (value instanceof Long) {
 			return value;
 		}
-		
-		if (value instanceof Integer)
-		{
+
+		if (value instanceof Integer) {
 			return value;
 		}
-		
-		if (value instanceof Short)
-		{
+
+		if (value instanceof Short) {
 			return value;
 		}
-		
-		if (value instanceof Byte)
-		{
+
+		if (value instanceof Byte) {
 			return value;
 		}
-		
-		if (value instanceof Boolean)
-		{
+
+		if (value instanceof Boolean) {
 			return value;
 		}
-		
+
 		return null;
 	}
 
@@ -685,18 +696,17 @@ public class TPJMSMessage implements Message
 	 * Returns an <code>Enumeration</code> of all the property names.
 	 * 
 	 * <p>
-	 * Note that JMS standard header fields are not considered properties and are
-	 * not returned in this enumeration.
+	 * Note that JMS standard header fields are not considered properties and
+	 * are not returned in this enumeration.
 	 * </p>
 	 * 
 	 * @return an enumeration of all the names of property values
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property names due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property names due to
+	 *             some internal error.
 	 */
 	@Override
-	public Enumeration getPropertyNames() throws JMSException
-	{
+	public Enumeration getPropertyNames() throws JMSException {
 		return Collections.enumeration(properties.keySet());
 	}
 
@@ -704,35 +714,33 @@ public class TPJMSMessage implements Message
 	 * Returns the value of the short property with the specified name.
 	 * 
 	 * @param name
-	 *          the name of the short property
+	 *            the name of the short property
 	 * @return the short property value for the specified name
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public short getShortProperty(String name) throws JMSException
-	{
+	public short getShortProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		
-		if (value instanceof Short)
-		{
+
+		if (value instanceof Short) {
 			return (Short) value;
 		}
 
-		if (value instanceof Byte)
-		{
+		if (value instanceof Byte) {
 			return (Byte) value;
 		}
 
-		if (value == null || value instanceof String)
-		{
+		if (value == null || value instanceof String) {
 			return Short.valueOf((String) value);
 		}
 
-		throw new MessageFormatException("Unsupported conversion to short from type: " + value.getClass().getName());
+		throw new MessageFormatException(
+				"Unsupported conversion to short from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
@@ -740,81 +748,72 @@ public class TPJMSMessage implements Message
 	 * name.
 	 * 
 	 * @param name
-	 *          the name of the <code>String</code> property
+	 *            the name of the <code>String</code> property
 	 * @return the String property value for the specified name; if there is no
 	 *         property by this name, a <code>null</code> value is returned
 	 * @throws JMSException
-	 *           if the JMS provider fails to get the property value due to some
-	 *           internal error.
+	 *             if the JMS provider fails to get the property value due to
+	 *             some internal error.
 	 * @throws MessageFormatException
-	 *           if this type conversion is invalid.
+	 *             if this type conversion is invalid.
 	 */
 	@Override
-	public String getStringProperty(String name) throws JMSException
-	{
+	public String getStringProperty(String name) throws JMSException {
 		Object value = properties.get(name);
-		
-		if (value == null)
-		{
+
+		if (value == null) {
 			return null;
 		}
-		
-		if (value instanceof String)
-		{
+
+		if (value instanceof String) {
 			return (String) value;
 		}
-		
-		if (value instanceof Double)
-		{
+
+		if (value instanceof Double) {
 			return Double.toString((Double) value);
 		}
-		
-		if (value instanceof Float)
-		{
+
+		if (value instanceof Float) {
 			return Float.toString((Float) value);
 		}
-		
-		if (value instanceof Long)
-		{
+
+		if (value instanceof Long) {
 			return Long.toString((Long) value);
 		}
-		
-		if (value instanceof Integer)
-		{
+
+		if (value instanceof Integer) {
 			return Integer.toString((Integer) value);
 		}
-		
-		if (value instanceof Short)
-		{
+
+		if (value instanceof Short) {
 			return Short.toString((Short) value);
 		}
-		
-		if (value instanceof Byte)
-		{
+
+		if (value instanceof Byte) {
 			return Byte.toString((Byte) value);
 		}
-		
-		if (value instanceof Boolean)
-		{
+
+		if (value instanceof Boolean) {
 			return Boolean.toString((Boolean) value);
 		}
-		
-		throw new MessageFormatException("Unsupported conversion to String from type: " + value.getClass().getName());
+
+		throw new MessageFormatException(
+				"Unsupported conversion to String from type: "
+						+ value.getClass().getName());
 	}
 
 	/**
 	 * Indicates whether a property value exists.
 	 * 
 	 * @param name
-	 *          the name of the property to test
+	 *            the name of the property to test
 	 * @return <code>true</code> if the property exists
 	 * @throws JMSException
-	 *           if the JMS provider fails to determine if the property exists due
-	 *           to some internal error.
+	 *             if the JMS provider fails to determine if the property exists
+	 *             due to some internal error.
 	 */
 	@Override
-	public boolean propertyExists(String name) throws JMSException
-	{
+	public boolean propertyExists(String name) throws JMSException {
 		return properties.containsKey(name);
 	}
 
@@ -822,21 +821,21 @@ public class TPJMSMessage implements Message
 	 * Sets a boolean property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the boolean property
+	 *            the name of the boolean property
 	 * @param value
-	 *          the boolean property value to set
+	 *            the boolean property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setBooleanProperty(String name, boolean value) throws JMSException
-	{
+	public void setBooleanProperty(String name, boolean value)
+			throws JMSException {
 		setObjectProperty(name, value);
 	}
 
@@ -844,21 +843,20 @@ public class TPJMSMessage implements Message
 	 * Sets a byte property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the byte property
+	 *            the name of the byte property
 	 * @param value
-	 *          the byte property value to set
+	 *            the byte property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setByteProperty(String name, byte value) throws JMSException
-	{
+	public void setByteProperty(String name, byte value) throws JMSException {
 		setObjectProperty(name, value);
 	}
 
@@ -866,21 +864,21 @@ public class TPJMSMessage implements Message
 	 * Sets a double property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the double property
+	 *            the name of the double property
 	 * @param value
-	 *          the double property value to set
+	 *            the double property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setDoubleProperty(String name, double value) throws JMSException
-	{
+	public void setDoubleProperty(String name, double value)
+			throws JMSException {
 		setObjectProperty(name, value);
 	}
 
@@ -888,21 +886,20 @@ public class TPJMSMessage implements Message
 	 * Sets a float property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the float property
+	 *            the name of the float property
 	 * @param value
-	 *          the float property value to set
+	 *            the float property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setFloatProperty(String name, float value) throws JMSException
-	{
+	public void setFloatProperty(String name, float value) throws JMSException {
 		setObjectProperty(name, value);
 	}
 
@@ -910,21 +907,20 @@ public class TPJMSMessage implements Message
 	 * Sets an int property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the int property
+	 *            the name of the int property
 	 * @param value
-	 *          the int property value to set
+	 *            the int property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setIntProperty(String name, int value) throws JMSException
-	{
+	public void setIntProperty(String name, int value) throws JMSException {
 		setObjectProperty(name, value);
 	}
 
@@ -932,9 +928,9 @@ public class TPJMSMessage implements Message
 	 * Sets the correlation ID for the message.
 	 * 
 	 * <p>
-	 * A client can use the <code>JMSCorrelationID</code> header field to link one
-	 * message with another. A typical use is to link a response message with its
-	 * request message.
+	 * A client can use the <code>JMSCorrelationID</code> header field to link
+	 * one message with another. A typical use is to link a response message
+	 * with its request message.
 	 * </p>
 	 * 
 	 * <p>
@@ -954,8 +950,8 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * <p>
-	 * In some cases, an application (made up of several clients) needs to use an
-	 * application-specific value for linking messages. For instance, an
+	 * In some cases, an application (made up of several clients) needs to use
+	 * an application-specific value for linking messages. For instance, an
 	 * application may use <code>JMSCorrelationID</code> to hold a value
 	 * referencing some external information. Application-specified values must
 	 * not start with the 'ID:' prefix; this is reserved for provider-generated
@@ -972,17 +968,16 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param correlationID
-	 *          the message ID of a message being referred to
+	 *            the message ID of a message being referred to
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the correlation ID due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the correlation ID due to
+	 *             some internal error.
 	 * @see #getJMSCorrelationID()
 	 * @see #getJMSCorrelationIDAsBytes()
 	 * @see #setJMSCorrelationIDAsBytes(byte[])
 	 */
 	@Override
-	public void setJMSCorrelationID(String correlationID) throws JMSException
-	{
+	public void setJMSCorrelationID(String correlationID) throws JMSException {
 		this.correlationID = correlationID;
 	}
 
@@ -994,16 +989,16 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param correlationID
-	 *          the correlation ID value as an array of bytes
+	 *            the correlation ID value as an array of bytes
 	 * @throws UnsupportedOperationException
-	 *           always
+	 *             always
 	 * @see #setJMSCorrelationID(String)
 	 * @see #getJMSCorrelationID()
 	 * @see #getJMSCorrelationIDAsBytes()
 	 */
 	@Override
-	public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws UnsupportedOperationException
-	{
+	public void setJMSCorrelationIDAsBytes(byte[] correlationID)
+			throws UnsupportedOperationException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -1016,22 +1011,20 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param deliveryMode
-	 *          the delivery mode for this message
+	 *            the delivery mode for this message
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the delivery mode due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the delivery mode due to
+	 *             some internal error.
 	 * @see #getJMSDeliveryMode()
 	 * @see DeliveryMode
 	 */
 	@Override
-	public void setJMSDeliveryMode(int deliveryMode) throws JMSException
-	{
-		if (deliveryMode != DeliveryMode.PERSISTENT &&
-				deliveryMode != DeliveryMode.NON_PERSISTENT)
-		{
+	public void setJMSDeliveryMode(int deliveryMode) throws JMSException {
+		if (deliveryMode != DeliveryMode.PERSISTENT
+				&& deliveryMode != DeliveryMode.NON_PERSISTENT) {
 			throw new JMSException("Invalid deliveryMode: " + deliveryMode);
 		}
-		
+
 		this.deliveryMode = deliveryMode;
 	}
 
@@ -1044,15 +1037,14 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param destination
-	 *          the destination for this message
+	 *            the destination for this message
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the destination due to some
-	 *           internal error
+	 *             if the JMS provider fails to set the destination due to some
+	 *             internal error
 	 * @see #getJMSDestination()
 	 */
 	@Override
-	public void setJMSDestination(Destination destination) throws JMSException
-	{
+	public void setJMSDestination(Destination destination) throws JMSException {
 		this.destination = destination;
 	}
 
@@ -1065,15 +1057,14 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param expiration
-	 *          the message's expiration time
+	 *            the message's expiration time
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the message expiration due to
-	 *           some internal error.
+	 *             if the JMS provider fails to set the message expiration due
+	 *             to some internal error.
 	 * @see #getJMSExpiration()
 	 */
 	@Override
-	public void setJMSExpiration(long expiration) throws JMSException
-	{
+	public void setJMSExpiration(long expiration) throws JMSException {
 		this.expiration = expiration;
 	}
 
@@ -1086,20 +1077,18 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param id
-	 *          the ID of the message
+	 *            the ID of the message
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the message ID due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the message ID due to some
+	 *             internal error.
 	 * @see #getJMSMessageID()
 	 */
 	@Override
-	public void setJMSMessageID(String id) throws JMSException
-	{
-		if (id != null && !id.startsWith("ID:"))
-		{
+	public void setJMSMessageID(String id) throws JMSException {
+		if (id != null && !id.startsWith("ID:")) {
 			throw new JMSException("Invalid message ID: " + id);
 		}
-		
+
 		this.messageID = id;
 	}
 
@@ -1112,20 +1101,18 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param priority
-	 *          the priority of this message
+	 *            the priority of this message
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the message priority due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the message priority due to
+	 *             some internal error.
 	 * @see #getJMSPriority()
 	 */
 	@Override
-	public void setJMSPriority(int priority) throws JMSException
-	{
-		if (priority < 0 || priority > 9)
-		{
+	public void setJMSPriority(int priority) throws JMSException {
+		if (priority < 0 || priority > 9) {
 			throw new JMSException("Invalid priority: " + priority);
 		}
-		
+
 		this.priority = priority;
 	}
 
@@ -1133,20 +1120,19 @@ public class TPJMSMessage implements Message
 	 * Specifies whether this message is being redelivered.
 	 * 
 	 * <p>
-	 * This field is set at the time the message is delivered. This method can be
-	 * used to change the value for a message that has been received.
+	 * This field is set at the time the message is delivered. This method can
+	 * be used to change the value for a message that has been received.
 	 * </p>
 	 * 
 	 * @param redelivered
-	 *          an indication of whether this message is being redelivered
+	 *            an indication of whether this message is being redelivered
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the redelivered state due to
-	 *           some internal error
+	 *             if the JMS provider fails to set the redelivered state due to
+	 *             some internal error
 	 * @see #getJMSRedelivered()
 	 */
 	@Override
-	public void setJMSRedelivered(boolean redelivered) throws JMSException
-	{
+	public void setJMSRedelivered(boolean redelivered) throws JMSException {
 		this.redelivered = redelivered;
 	}
 
@@ -1156,22 +1142,22 @@ public class TPJMSMessage implements Message
 	 * 
 	 * <p>
 	 * The <code>JMSReplyTo</code> header field contains the destination where a
-	 * reply to the current message should be sent. If it is <code>null</code>, no
-	 * reply is expected. The destination may be either a <code>Queue</code>
+	 * reply to the current message should be sent. If it is <code>null</code>,
+	 * no reply is expected. The destination may be either a <code>Queue</code>
 	 * object or a <code>Topic</code> object.
 	 * </p>
 	 * 
 	 * <p>
-	 * Messages sent with a <code>null</code> <code>JMSReplyTo</code> value may be
-	 * a notification of some event, or they may just be some data the sender
+	 * Messages sent with a <code>null</code> <code>JMSReplyTo</code> value may
+	 * be a notification of some event, or they may just be some data the sender
 	 * thinks is of interest.
 	 * </p>
 	 * 
 	 * <p>
-	 * Messages with a <code>JMSReplyTo</code> value typically expect a response.
-	 * A response is optional; it is up to the client to decide. These messages
-	 * are called requests. A message sent in response to a request is called a
-	 * reply.
+	 * Messages with a <code>JMSReplyTo</code> value typically expect a
+	 * response. A response is optional; it is up to the client to decide. These
+	 * messages are called requests. A message sent in response to a request is
+	 * called a reply.
 	 * </p>
 	 * 
 	 * <p>
@@ -1181,15 +1167,14 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param replyTo
-	 *          Destination to which to send a response to this message
+	 *            Destination to which to send a response to this message
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the <code>JMSReplyTo</code>
-	 *           destination due to some internal error.
+	 *             if the JMS provider fails to set the <code>JMSReplyTo</code>
+	 *             destination due to some internal error.
 	 * @see #getJMSReplyTo()
 	 */
 	@Override
-	public void setJMSReplyTo(Destination replyTo) throws JMSException
-	{
+	public void setJMSReplyTo(Destination replyTo) throws JMSException {
 		this.replyTo = replyTo;
 	}
 
@@ -1202,15 +1187,14 @@ public class TPJMSMessage implements Message
 	 * </p>
 	 * 
 	 * @param timestamp
-	 *          the timestamp for this message
+	 *            the timestamp for this message
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the timestamp due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the timestamp due to some
+	 *             internal error.
 	 * @see #getJMSTimestamp()
 	 */
 	@Override
-	public void setJMSTimestamp(long timestamp) throws JMSException
-	{
+	public void setJMSTimestamp(long timestamp) throws JMSException {
 		this.timestamp = timestamp;
 	}
 
@@ -1219,8 +1203,8 @@ public class TPJMSMessage implements Message
 	 * 
 	 * <p>
 	 * Some JMS providers use a message repository that contains the definitions
-	 * of messages sent by applications. The <code>JMSType</code> header field may
-	 * reference a message's definition in the provider's repository.
+	 * of messages sent by applications. The <code>JMSType</code> header field
+	 * may reference a message's definition in the provider's repository.
 	 * </p>
 	 * 
 	 * <p>
@@ -1231,28 +1215,29 @@ public class TPJMSMessage implements Message
 	 * <p>
 	 * Some messaging systems require that a message type definition for each
 	 * application message be created and that each message specify its type. In
-	 * order to work with such JMS providers, JMS clients should assign a value to
-	 * <code>JMSType</code>, whether the application makes use of it or not. This
-	 * ensures that the field is properly set for those providers that require it.
+	 * order to work with such JMS providers, JMS clients should assign a value
+	 * to <code>JMSType</code>, whether the application makes use of it or not.
+	 * This ensures that the field is properly set for those providers that
+	 * require it.
 	 * </p>
 	 * 
 	 * <p>
 	 * To ensure portability, JMS clients should use symbolic values for
 	 * <code>JMSType</code> that can be configured at installation time to the
 	 * values defined in the current provider's message repository. If string
-	 * literals are used, they may not be valid type names for some JMS providers.
+	 * literals are used, they may not be valid type names for some JMS
+	 * providers.
 	 * </p>
 	 * 
 	 * @param type
-	 *          the message type
+	 *            the message type
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the message type due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the message type due to some
+	 *             internal error.
 	 * @see #getJMSType()
 	 */
 	@Override
-	public void setJMSType(String type) throws JMSException
-	{
+	public void setJMSType(String type) throws JMSException {
 		this.type = type;
 	}
 
@@ -1260,73 +1245,68 @@ public class TPJMSMessage implements Message
 	 * Sets a long property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the long property
+	 *            the name of the long property
 	 * @param value
-	 *          the long property value to set
+	 *            the long property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setLongProperty(String name, long value) throws JMSException
-	{
+	public void setLongProperty(String name, long value) throws JMSException {
 		setObjectProperty(name, value);
 	}
 
 	/**
-	 * Sets a Java object property value with the specified name into the message.
+	 * Sets a Java object property value with the specified name into the
+	 * message.
 	 * 
 	 * <p>
-	 * Note that this method works only for the objectified primitive object types
-	 * (Integer, Double, Long ...) and String objects.
+	 * Note that this method works only for the objectified primitive object
+	 * types (Integer, Double, Long ...) and String objects.
 	 * </p>
 	 * 
 	 * @param name
-	 *          the name of the Java object property
+	 *            the name of the Java object property
 	 * @param value
-	 *          the Java object property value to set
+	 *            the Java object property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @throws IllegalArgumentException
-	 *           if the name is <code>null</code> or if the name is an empty
-	 *           string.
+	 *             if the name is <code>null</code> or if the name is an empty
+	 *             string.
 	 * @throws MessageFormatException
-	 *           if the object is invalid
+	 *             if the object is invalid
 	 * @throws MessageNotWriteableException
-	 *           if properties are read-only
+	 *             if properties are read-only
 	 */
 	@Override
-	public void setObjectProperty(String name, Object value) throws JMSException
-	{
-		if (name == null || name.length() == 0)
-		{
+	public void setObjectProperty(String name, Object value)
+			throws JMSException {
+		if (name == null || name.length() == 0) {
 			throw new IllegalArgumentException("name is required");
 		}
-		
-		if (propertiesReadOnly)
-		{
-			throw new MessageNotWriteableException("Message properties are read-only");
+
+		if (propertiesReadOnly) {
+			throw new MessageNotWriteableException(
+					"Message properties are read-only");
 		}
 
-		if (value != null &&
-				!(value instanceof Boolean) &&
-				!(value instanceof Byte) &&
-				!(value instanceof Short) &&
-				!(value instanceof Integer) &&
-				!(value instanceof Long) &&
-				!(value instanceof Float) &&
-				!(value instanceof Double) &&
-				!(value instanceof String))
-		{
-			throw new MessageFormatException("Illegal property type: " + value.getClass().getName()); 
+		if (value != null && !(value instanceof Boolean)
+				&& !(value instanceof Byte) && !(value instanceof Short)
+				&& !(value instanceof Integer) && !(value instanceof Long)
+				&& !(value instanceof Float) && !(value instanceof Double)
+				&& !(value instanceof String)) {
+			throw new MessageFormatException("Illegal property type: "
+					+ value.getClass().getName());
 		}
-		
+
 		properties.put(name, value);
 	}
 
@@ -1334,21 +1314,20 @@ public class TPJMSMessage implements Message
 	 * Sets a short property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the short property
+	 *            the name of the short property
 	 * @param value
-	 *          the short property value to set
+	 *            the short property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setShortProperty(String name, short value) throws JMSException
-	{
+	public void setShortProperty(String name, short value) throws JMSException {
 		setObjectProperty(name, value);
 	}
 
@@ -1356,21 +1335,21 @@ public class TPJMSMessage implements Message
 	 * Sets a String property value with the specified name into the message.
 	 * 
 	 * @param name
-	 *          the name of the String property
+	 *            the name of the String property
 	 * @param value
-	 *          the String property value to set
+	 *            the String property value to set
 	 * @throws JMSException
-	 *           if the JMS provider fails to set the property due to some
-	 *           internal error.
+	 *             if the JMS provider fails to set the property due to some
+	 *             internal error.
 	 * @param IllegalArgumentException
-	 *          if the name is <code>null</code> or if the name is an empty
-	 *          string.
+	 *            if the name is <code>null</code> or if the name is an empty
+	 *            string.
 	 * @param MessageNotWriteableException
-	 *          if properties are read-only
+	 *            if properties are read-only
 	 */
 	@Override
-	public void setStringProperty(String name, String value) throws JMSException
-	{
+	public void setStringProperty(String name, String value)
+			throws JMSException {
 		setObjectProperty(name, value);
 	}
 
@@ -1378,11 +1357,19 @@ public class TPJMSMessage implements Message
 	 * Sets the read-only flag for this message's properties.
 	 * 
 	 * @param value
-	 *          <code>true</code> if properties are read-only
+	 *            <code>true</code> if properties are read-only
 	 */
-	void setPropertiesReadOnly(boolean value)
-	{
+	void setPropertiesReadOnly(boolean value) {
 		this.propertiesReadOnly = value;
 	}
-	
+
+	// ////////// INTERNAL
+	public AcknowledgeCallback getAcknowledgeCallback() {
+		return acknowledgeCallback;
+	}
+
+	public void setAcknowledgeCallback(AcknowledgeCallback acknowledgeCallback) {
+		this.acknowledgeCallback = acknowledgeCallback;
+	}
+
 }

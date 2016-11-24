@@ -2,23 +2,19 @@ package nl.ellipsis.tpjms.provider.vm;
 
 import java.util.UUID;
 
-public class VmBroker
-{
+public class VmBroker {
 	private final String brokerId;
-	
-	public VmBroker(String brokerName)
-	{
+
+	public VmBroker(String brokerName) {
 		brokerId = "vm:" + brokerName + ":" + UUID.randomUUID().toString();
 	}
-	
-	public String getBrokerId()
-	{
+
+	public String getBrokerId() {
 		return brokerId;
 	}
-	
+
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return brokerId;
 	}
 }

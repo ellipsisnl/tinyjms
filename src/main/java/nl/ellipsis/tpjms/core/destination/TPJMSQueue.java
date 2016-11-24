@@ -3,7 +3,7 @@ package nl.ellipsis.tpjms.core.destination;
 import javax.jms.*;
 
 /**
- * TinyJms implementation of {@link Queue}.
+ * TPJMS implementation of {@link Queue}.
  */
 public class TPJMSQueue extends TPJMSDestination implements Queue {
 	public TPJMSQueue(String queueName) {

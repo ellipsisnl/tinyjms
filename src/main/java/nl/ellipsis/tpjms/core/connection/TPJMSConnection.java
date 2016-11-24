@@ -10,7 +10,7 @@ import nl.ellipsis.tpjms.core.session.TPJMSSession;
 import nl.ellipsis.tpjms.provider.*;
 
 /**
- * TinyJms implementation of Connection.
+ * TPJMS implementation of Connection.
  */
 public class TPJMSConnection implements Connection, QueueConnection, TopicConnection {
 	private final ReentrantReadWriteLock clientIDLock = new ReentrantReadWriteLock();

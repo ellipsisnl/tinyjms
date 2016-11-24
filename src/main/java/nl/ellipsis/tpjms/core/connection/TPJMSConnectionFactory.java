@@ -8,7 +8,7 @@ import javax.jms.*;
 import nl.ellipsis.tpjms.provider.*;
 
 /**
- * TinyJms implementation of {@link ConnectionFactory}.
+ * TPJMS implementation of {@link ConnectionFactory}.
  */
 public class TPJMSConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory {
 	

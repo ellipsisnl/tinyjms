@@ -6,31 +6,29 @@ import java.util.*;
 import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
 /**
- * Registry of TinyJms providers.
+ * Registry of TPJMS providers.
  */
-public final class ProviderRegistry
-{
+public final class ProviderRegistry {
 	private static final Map<String, TPJMSProvider> providerMap = new HashMap<String, TPJMSProvider>();
 
-	static
-	{
+	static {
 		registerProvider("vm", VmProvider.getInstance());
 	}
 
-	private ProviderRegistry()
-	{}
+	private ProviderRegistry() {
+	}
 
 	/**
 	 * Retrieves a provider instance from the registry by URI.
 	 * 
 	 * @param uri
-	 *          URI of provider
-	 * @return TinyJms provider
+	 *            URI of provider
+	 * @return TPJMS provider
 	 * @throws InvalidUrlException
-	 *           if url is malformed or a provider could not be found
+	 *             if url is malformed or a provider could not be found
 	 */
-	public static synchronized TPJMSProvider getProviderForUri(URI uri) throws InvalidUrlException
-	{
+	public static synchronized TPJMSProvider getProviderForUri(URI uri)
+			throws InvalidUrlException {
 		return getProviderForScheme(getScheme(uri));
 	}
 
@@ -38,17 +36,16 @@ public final class ProviderRegistry
 	 * Retrieves a provider instance from the registry by URI scheme.
 	 * 
 	 * @param scheme
-	 *          URI scheme
-	 * @return TinyJms provider
+	 *            URI scheme
+	 * @return TPJMS provider
 	 * @throws InvalidUrlException
-	 *           if a provider could not be found
+	 *             if a provider could not be found
 	 */
-	public static synchronized TPJMSProvider getProviderForScheme(String scheme) throws InvalidUrlException
-	{
+	public static synchronized TPJMSProvider getProviderForScheme(String scheme)
+			throws InvalidUrlException {
 		TPJMSProvider provider = providerMap.get(scheme);
 
-		if (provider == null)
-		{
+		if (provider == null) {
 			throw new InvalidUrlException("Unknown provider type: " + scheme);
 		}
 
@@ -59,26 +56,23 @@ public final class ProviderRegistry
 	 * Registers a new provider.
 	 * 
 	 * @param scheme
-	 *          URI scheme to register
+	 *            URI scheme to register
 	 * @param provider
-	 *          JmsProvider implementation
+	 *            JmsProvider implementation
 	 * @throws IllegalArgumentException
-	 *           if scheme or provider is null
+	 *             if scheme or provider is null
 	 */
-	public static synchronized void registerProvider(String scheme, TPJMSProvider provider) throws IllegalArgumentException
-	{
-		if (scheme == null)
-		{
+	public static synchronized void registerProvider(String scheme,
+			TPJMSProvider provider) throws IllegalArgumentException {
+		if (scheme == null) {
 			throw new IllegalArgumentException("Scheme cannot be null");
 		}
 
-		if (scheme.trim().length() == 0)
-		{
+		if (scheme.trim().length() == 0) {
 			throw new IllegalArgumentException("Scheme must not be empty");
 		}
 
-		if (provider == null)
-		{
+		if (provider == null) {
 			throw new IllegalArgumentException("Provider cannot be null");
 		}
 
@@ -89,20 +83,16 @@ public final class ProviderRegistry
 	 * Unregisters a provider.
 	 * 
 	 * @param scheme
-	 *          URI scheme
+	 *            URI scheme
 	 */
-	public static synchronized void unregisterProvider(String scheme)
-	{
-		if (scheme != null)
-		{
+	public static synchronized void unregisterProvider(String scheme) {
+		if (scheme != null) {
 			providerMap.remove(scheme.toLowerCase(Locale.US));
 		}
 	}
 
-	private static String getScheme(URI uri) throws InvalidUrlException
-	{
-		if (uri == null)
-		{
+	private static String getScheme(URI uri) throws InvalidUrlException {
+		if (uri == null) {
 			throw new InvalidUrlException("Provider URI cannot be null");
 		}
 

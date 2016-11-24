@@ -88,7 +88,7 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public BytesMessage createBytesMessage() throws JMSException {
-		return new TPJMSBytesMessage();
+		return new TPJMSBytesMessage(this);
 	}
 
 	@Override
@@ -124,22 +124,22 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public MapMessage createMapMessage() throws JMSException {
-		return new TPJMSMapMessage();
+		return new TPJMSMapMessage(this);
 	}
 
 	@Override
 	public Message createMessage() throws JMSException {
-		return new TPJMSMessage();
+		return new TPJMSMessage(this);
 	}
 
 	@Override
 	public ObjectMessage createObjectMessage() throws JMSException {
-		return new TPJMSObjectMessage();
+		return new TPJMSObjectMessage(this);
 	}
 
 	@Override
 	public ObjectMessage createObjectMessage(Serializable object) throws JMSException {
-		ObjectMessage objectMessage = new TPJMSObjectMessage();
+		ObjectMessage objectMessage = new TPJMSObjectMessage(this);
 		objectMessage.setObject(object);
 		return objectMessage;
 	}
@@ -205,7 +205,7 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public StreamMessage createStreamMessage() throws JMSException {
-		return new TPJMSStreamMessage();
+		return new TPJMSStreamMessage(this);
 	}
 
 	@Override
@@ -222,12 +222,12 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public TextMessage createTextMessage() throws JMSException {
-		return new TPJMSTextMessage();
+		return new TPJMSTextMessage(this);
 	}
 
 	@Override
 	public TextMessage createTextMessage(String text) throws JMSException {
-		return new TPJMSTextMessage(text);
+		return new TPJMSTextMessage(this,text);
 	}
 
 	/**
