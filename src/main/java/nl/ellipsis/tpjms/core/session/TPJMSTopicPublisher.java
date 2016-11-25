@@ -10,9 +10,9 @@ import nl.ellipsis.tpjms.core.connection.TPJMSConnection;
 public class TPJMSTopicPublisher extends TPJMSMessageProducer implements
 		TopicPublisher {
 
-	public TPJMSTopicPublisher(TPJMSConnection connection, Topic topic)
+	public TPJMSTopicPublisher(TPJMSSession session, Topic topic)
 			throws JMSException {
-		super(connection, topic);
+		super(session, topic);
 	}
 
 	public Topic getTopic() throws JMSException {

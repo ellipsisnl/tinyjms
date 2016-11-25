@@ -11,6 +11,7 @@ import nl.ellipsis.tpjms.core.message.TPJMSTextMessage;
 import nl.ellipsis.tpjms.core.session.TPJMSMessageProducer;
 import nl.ellipsis.tpjms.core.session.TPJMSSession;
 import nl.ellipsis.tpjms.provider.vm.*;
+import nl.ellipsis.tpjms.util.AcknowledgeCallback;
 
 import org.junit.*;
 
@@ -20,6 +21,40 @@ public class TPJMSMessageProducerTest {
 	private TPJMSQueue queue;
 	private TPJMSMessageProducer prod;
 	private TPJMSTextMessage message;
+	
+	private class AcknowledgeCallbackImpl implements AcknowledgeCallback {
+		private boolean acknowledged = false;
+		private String destinationName = null;
+		private String messageId = null;
+		
+		@Override
+		public void notify(String messageId, String destinationName) throws JMSException {
+			System.out.println("Message "+messageId+" arrived at destination "+destinationName);
+			this.acknowledged = true;
+			this.destinationName = destinationName;
+			this.messageId = messageId;
+		}
+		
+		public boolean isAcknowledged() {
+			return acknowledged;
+		}
+		
+		public String getDestinationName() {
+			return destinationName;
+		}
+		
+		public String getMessageId() {
+			return messageId;
+		}
+		
+		public void clear() {
+			this.acknowledged = false;
+			this.destinationName = null;
+			this.messageId = null;
+		}
+	}
+	
+	private AcknowledgeCallbackImpl acknowledgeCallback;
 
 	@Before
 	public void setUp() throws Exception {
@@ -27,11 +62,13 @@ public class TPJMSMessageProducerTest {
 
 		TPJMSConnectionFactory factory = new TPJMSConnectionFactory("vm://test");
 		con = (TPJMSConnection) factory.createConnection();
-		session = (TPJMSSession) con.createSession(false,
-				Session.AUTO_ACKNOWLEDGE);
+		session = (TPJMSSession) con.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		queue = (TPJMSQueue) session.createQueue("test-queue");
 		prod = (TPJMSMessageProducer) session.createProducer(queue);
 		message = (TPJMSTextMessage) session.createTextMessage("BODY");
+		
+		acknowledgeCallback = new AcknowledgeCallbackImpl();
+		message.setAcknowledgeCallback(acknowledgeCallback);
 	}
 
 	@After
@@ -116,27 +153,35 @@ public class TPJMSMessageProducerTest {
 
 	@Test
 	public void testSendMessage() throws JMSException {
+		acknowledgeCallback.clear();
 		prod.send(message);
-		fail("Don't know how to validate sending");
+		// As Session.AUTO_ACKNOWLEDGE, producer should be notified through the callback 
+		assertTrue(acknowledgeCallback.isAcknowledged());
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void testSendMessageWithDestinationUnsupported() throws JMSException {
+		acknowledgeCallback.clear();
 		prod.send(queue, message);
+		assertFalse(acknowledgeCallback.isAcknowledged());
 	}
 
 	@Test
 	public void testSendMessageWithDestination() throws JMSException {
+		acknowledgeCallback.clear();
 		prod.close();
 		prod = (TPJMSMessageProducer) session.createProducer(null);
 		prod.send(queue, message);
-		fail("Don't know how to validate sending");
+		// As Session.AUTO_ACKNOWLEDGE, producer should be notified through the callback 
+		assertTrue(acknowledgeCallback.isAcknowledged());
 	}
 
 	@Test
 	public void testSendMessageFull() throws JMSException {
+		acknowledgeCallback.clear();
 		prod.send(message, DeliveryMode.NON_PERSISTENT, 1, 60000L);
-		fail("Don't know how to validate sending");
+		// As Session.AUTO_ACKNOWLEDGE, producer should be notified through the callback 
+		assertTrue(acknowledgeCallback.isAcknowledged());
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -147,10 +192,12 @@ public class TPJMSMessageProducerTest {
 
 	@Test
 	public void testSendMessageWithDestinationFull() throws JMSException {
+		acknowledgeCallback.clear();
 		prod.close();
 		prod = (TPJMSMessageProducer) session.createProducer(null);
 		prod.send(queue, message, DeliveryMode.NON_PERSISTENT, 1, 60000L);
-		fail("Don't know how to validate sending");
+		// As Session.AUTO_ACKNOWLEDGE, producer should be notified through the callback 
+		assertTrue(acknowledgeCallback.isAcknowledged());
 	}
 
 }

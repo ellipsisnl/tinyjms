@@ -33,13 +33,14 @@ public class TPJMSSessionTest {
 
 		TPJMSConnectionFactory factory = new TPJMSConnectionFactory("vm://test");
 		con = (TPJMSConnection) factory.createConnection();
-		session = (TPJMSSession) con.createSession(false,
-				Session.AUTO_ACKNOWLEDGE);
+		session = (TPJMSSession) con.createSession(false,Session.AUTO_ACKNOWLEDGE);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		session.close();
+		if(session.isOpen()) {
+			session.close();
+		}
 		session = null;
 		con.close();
 		con = null;
@@ -47,8 +48,15 @@ public class TPJMSSessionTest {
 		VmProvider.getInstance().removeBroker("test");
 	}
 
-	@Test
+	@Test(expected = JMSException.class)
 	public void testClose() throws JMSException {
+		// first time session will be closed
+		try {
+			session.close();
+		} catch(Exception e) {
+			assertTrue(e.getMessage(),false);
+		}
+		// second time error as session is already closed
 		session.close();
 	}
 

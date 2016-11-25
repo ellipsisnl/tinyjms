@@ -71,14 +71,15 @@ public class TPJMSMessageProducer implements MessageProducer {
 	/**
 	 * Connection
 	 */
-	private final TPJMSConnection connection;
+	private final TPJMSSession session;
 
-	TPJMSMessageProducer(TPJMSConnection connection, Destination destination) throws JMSException {
-		this.connection = connection;
+	TPJMSMessageProducer(TPJMSSession session, Destination destination) throws JMSException {
+		this.session = session;
 		this.defaultDestination = destination;
 
-		if (destination != null)
+		if (destination != null) {
 			validateDestination(destination);
+		}
 	}
 
 	/**
@@ -260,8 +261,7 @@ public class TPJMSMessageProducer implements MessageProducer {
 	@Override
 	public void send(Destination destination, Message message) throws JMSException {
 		if (defaultDestination != null) {
-			throw new UnsupportedOperationException(
-					"This producer does not allow a destination to be specified at send() time");
+			throw new UnsupportedOperationException("This producer does not allow a destination to be specified at send() time");
 		}
 
 		int deliveryMode;
@@ -468,7 +468,11 @@ public class TPJMSMessageProducer implements MessageProducer {
 		validatePriority(priority);
 		validateTimeToLive(timeToLive);
 		
-		connection.getProvider().send(destination, message);
+		session.getProvider().send(destination, message);
+		// TODO correct, or should the destination acknowledge
+		if(session.getAcknowledgeMode() == Session.AUTO_ACKNOWLEDGE) {
+			message.acknowledge();
+		}
 	}
 
 	private void validateDestination(Destination destination) throws InvalidDestinationException {

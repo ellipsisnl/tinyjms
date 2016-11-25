@@ -1,6 +1,8 @@
 package nl.ellipsis.tpjms.core.connection;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.*;
@@ -24,6 +26,8 @@ public class TPJMSConnection implements Connection, QueueConnection, TopicConnec
 	private ExceptionListener exceptionListener;
 
 	private boolean isRunning = false;
+	
+	private List<Session> sessions = new ArrayList<Session>();
 
 	TPJMSConnection(TPJMSProvider provider, String clientID, URI uri, String userName, String password)
 			throws JMSException {
@@ -82,7 +86,9 @@ public class TPJMSConnection implements Connection, QueueConnection, TopicConnec
 	 */
 	@Override
 	public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException {
-		return new TPJMSSession(this, transacted, acknowledgeMode);
+		Session session = new TPJMSSession(this, transacted, acknowledgeMode);
+		registerSession(session);
+		return session;
 	}
 
 	/**
@@ -295,6 +301,14 @@ public class TPJMSConnection implements Connection, QueueConnection, TopicConnec
 
 	// TPJMS specific
 
+	private boolean registerSession(Session session) {
+		return sessions.add(session);
+	}
+	
+	public boolean unregisterSession(Session session) {
+		return sessions.remove(session);
+	}
+	
 	public boolean isRunning() {
 		return isRunning;
 	}

@@ -9,18 +9,42 @@ import javax.jms.*;
 
 import org.junit.*;
 
+import nl.ellipsis.tpjms.core.connection.TPJMSConnectionFactory;
 import nl.ellipsis.tpjms.core.destination.TPJMSQueue;
 import nl.ellipsis.tpjms.core.message.TPJMSMessage;
 import nl.ellipsis.tpjms.provider.vm.VmProvider;
+import nl.ellipsis.tpjms.util.AcknowledgeCallback;
 
 public class TPJMSMessageTest {
-	private VmProvider vmProvider;
 	private TPJMSMessage message;
+	
+	private class AcknowledgeCallbackImpl implements AcknowledgeCallback {
+		private boolean acknowledged = false;
+		@Override
+		public void notify(String messageId, String destinationName) throws JMSException {
+			System.out.println("Message "+messageId+" arrived at destination "+destinationName);
+			acknowledged = true;
+		}
+		
+		public boolean isAcknowledged() {
+			return acknowledged;
+		}
+
+		public void clear() {
+			acknowledged = false;
+		}
+	}
+	
+	private AcknowledgeCallbackImpl acknowledgeCallback;
 
 	@Before
 	public void setUp() throws Exception {
-		vmProvider = VmProvider.getInstance();
-		message = new TPJMSMessage(vmProvider.createSession());
+		TPJMSConnectionFactory factory = new TPJMSConnectionFactory();
+		TopicConnection connection = factory.createTopicConnection();
+		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		message = new TPJMSMessage(session);
+		acknowledgeCallback = new AcknowledgeCallbackImpl();
+		message.setAcknowledgeCallback(acknowledgeCallback);
 	}
 
 	@After
@@ -37,10 +61,9 @@ public class TPJMSMessageTest {
 
 	@Test
 	public void testAcknowledge() throws JMSException {
+		acknowledgeCallback.clear();
 		message.acknowledge();
-		// fail("Not sure how to verify");
-		// acknowledge can only be tested in end-to-end test with producers and
-		// destinations
+		assertTrue(acknowledgeCallback.isAcknowledged());
 	}
 
 	@Test
@@ -212,7 +235,8 @@ public class TPJMSMessageTest {
 
 	@Test
 	public void testJMSMessageID() throws JMSException {
-		assertNull(message.getJMSMessageID());
+		// we do not support message without an ID
+		assertNotNull(message.getJMSMessageID()); 
 		message.setJMSMessageID("ID:TEST");
 		assertEquals("ID:TEST", message.getJMSMessageID());
 	}

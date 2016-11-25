@@ -11,11 +11,11 @@ import nl.ellipsis.tpjms.util.AcknowledgeCallback;
 import org.apache.logging.log4j.*;
 
 public class TPJMSMessage implements Message {
-	private static final Logger logger = LogManager
-			.getLogger(TPJMSMessage.class);
+	private static final Logger logger = LogManager.getLogger(TPJMSMessage.class);
 
 	/* Properties */
 	private final Map<String, Object> properties = new HashMap<String, Object>();
+	private final static String MESSAGEID_PREFIX = "ID:";
 
 	/* Headers */
 	private String messageID = null;
@@ -40,6 +40,7 @@ public class TPJMSMessage implements Message {
 
 	public TPJMSMessage(Session session) {
 		this.session = session;
+		messageID = MESSAGEID_PREFIX + UUID.randomUUID().toString();
 	}
 
 	/**
@@ -73,9 +74,12 @@ public class TPJMSMessage implements Message {
 	public void acknowledge() throws JMSException {
 		// we need a callback where we send the acknowledge-message to
 		if (acknowledgeCallback != null) {
-			if (destination instanceof TPJMSDestination) {
-				acknowledgeCallback.notify(
-						((TPJMSDestination) destination).getName(), messageID);
+			if (destination == null) {
+				acknowledgeCallback.notify(messageID,null);
+			} else if (destination instanceof TPJMSDestination) {
+				acknowledgeCallback.notify(messageID,((TPJMSDestination) destination).getName());
+			} else {
+				acknowledgeCallback.notify(messageID, destination.toString());
 			}
 		}
 	}
@@ -1085,10 +1089,9 @@ public class TPJMSMessage implements Message {
 	 */
 	@Override
 	public void setJMSMessageID(String id) throws JMSException {
-		if (id != null && !id.startsWith("ID:")) {
+		if (id != null && !id.startsWith(MESSAGEID_PREFIX)) {
 			throw new JMSException("Invalid message ID: " + id);
 		}
-
 		this.messageID = id;
 	}
 

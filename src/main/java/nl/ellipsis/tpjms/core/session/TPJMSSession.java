@@ -16,12 +16,14 @@ import nl.ellipsis.tpjms.core.message.TPJMSMessage;
 import nl.ellipsis.tpjms.core.message.TPJMSObjectMessage;
 import nl.ellipsis.tpjms.core.message.TPJMSStreamMessage;
 import nl.ellipsis.tpjms.core.message.TPJMSTextMessage;
+import nl.ellipsis.tpjms.provider.TPJMSProvider;
 
 public class TPJMSSession implements Session, QueueSession, TopicSession {
 	private static final Logger logger = LogManager.getLogger(TPJMSSession.class);
 
 	private final TPJMSConnection connection;
 	private final int acknowledgeMode;
+	private boolean openedConnection = false;
 
 	/**
 	 * Creates a new JMS session.
@@ -60,12 +62,54 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 		this.acknowledgeMode = acknowledgeMode;
 		this.connection = connection;
+		this.openedConnection = true;
 	}
 
+	/**
+	 * Closes the session.
+	 * Since a provider may allocate some resources on behalf of a session outside the JVM, 
+	 * clients should close the resources when they are not needed. 
+	 * Relying on garbage collection to eventually reclaim these resources may not be timely enough.
+	 * 
+	 * There is no need to close the producers and consumers of a closed session.
+	 * 
+	 * This call will block until a receive call or message listener in progress has completed. 
+	 * A blocked message consumer receive call returns null when this session is closed.
+	 * 
+	 * However if the close method is called from a message listener on its own Session, 
+	 * then it will either fail and throw a javax.jms.IllegalStateException,
+	 * or it will succeed and close the Session, blocking until any pending receive 
+	 * call in progress has completed. If close succeeds and the acknowledge mode of the 
+	 * Session is set to AUTO_ACKNOWLEDGE, the current message will still be acknowledged 
+	 * automatically when the onMessage call completes.
+	 * 
+	 * Since two alternative behaviors are permitted in this case, applications should avoid calling close from a message listener on its own Session because this is not portable.
+	 * 
+	 * This method must not return until any incomplete asynchronous send operations for this Session have been completed and any CompletionListener callbacks have returned. Incomplete sends should be allowed to complete normally unless an error occurs.
+	 * 
+	 * For the avoidance of doubt, if an exception listener for this session's connection is running when close is invoked, there is no requirement for the close call to wait until the exception listener has returned before it may return.
+	 * 
+	 * Closing a transacted session must roll back the transaction in progress.
+	 * 
+	 * This method is the only Session method that can be called concurrently.
+	 * 
+	 * A CompletionListener callback method must not call close on its own Session. Doing so will cause an IllegalStateException to be thrown.
+	 * 
+	 * Invoking any other Session method on a closed session must throw a IllegalStateException. Closing a closed session must not throw an exception.
+	 * 
+	 * @see AutoCloseable.close()
+	 * @throws IllegalStateException -
+	 * this method has been called by a MessageListener on its own Session
+	 * this method has been called by a CompletionListener callback method on its own Session
+	 * @throws JMSException - if the JMS provider fails to close the session due to some internal error.
+	 */
 	@Override
 	public void close() throws JMSException {
-		// TODO Auto-generated method stub
-		logger.warn("close() not implemented yet");
+		if(!this.openedConnection) {
+			throw new JMSException("Session is already closed");
+		}
+		this.openedConnection = false;
+		connection.unregisterSession(this);
 	}
 
 	@Override
@@ -169,7 +213,7 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 	 */
 	@Override
 	public MessageProducer createProducer(Destination destination) throws JMSException {
-		return new TPJMSMessageProducer(this.connection,destination);
+		return new TPJMSMessageProducer(this,destination);
 	}
 
 	/**
@@ -324,7 +368,7 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public TopicPublisher createPublisher(Topic topic) throws JMSException {
-		return new TPJMSTopicPublisher(this.connection,topic);
+		return new TPJMSTopicPublisher(this,topic);
 	}
 
 	@Override
@@ -354,5 +398,19 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+	
+	///// INTERNAL
+	public TPJMSConnection getConnection() {
+		return connection;
+	}
+	
+	public TPJMSProvider getProvider() {
+		return connection.getProvider();
+	}
+	
+	public boolean isOpen() {
+		return this.openedConnection;
+	}
+	
 
 }

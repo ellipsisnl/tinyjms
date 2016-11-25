@@ -8,17 +8,19 @@ import javax.jms.*;
 
 import org.junit.*;
 
+import nl.ellipsis.tpjms.core.connection.TPJMSConnectionFactory;
 import nl.ellipsis.tpjms.core.message.TPJMSTextMessage;
 import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
 public class TPJMSTextMessageTest {
-	private VmProvider vmProvider;
 	private TPJMSTextMessage message;
 
 	@Before
 	public void setUp() throws Exception {
-		vmProvider = VmProvider.getInstance();
-		message = new TPJMSTextMessage(vmProvider.createSession());
+		TPJMSConnectionFactory factory = new TPJMSConnectionFactory();
+		TopicConnection connection = factory.createTopicConnection();
+		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		message = new TPJMSTextMessage(session);
 	}
 
 	@After

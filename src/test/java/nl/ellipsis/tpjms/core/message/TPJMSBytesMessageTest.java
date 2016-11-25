@@ -6,17 +6,19 @@ import javax.jms.*;
 
 import org.junit.*;
 
+import nl.ellipsis.tpjms.core.connection.TPJMSConnectionFactory;
 import nl.ellipsis.tpjms.core.message.TPJMSBytesMessage;
 import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
 public class TPJMSBytesMessageTest {
-	private VmProvider vmProvider;
 	private TPJMSBytesMessage message;
 
 	@Before
 	public void setUp() throws Exception {
-		vmProvider = VmProvider.getInstance();
-		message = new TPJMSBytesMessage(vmProvider.createSession());
+		TPJMSConnectionFactory factory = new TPJMSConnectionFactory();
+		TopicConnection connection = factory.createTopicConnection();
+		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		message = new TPJMSBytesMessage(session);
 	}
 
 	@After

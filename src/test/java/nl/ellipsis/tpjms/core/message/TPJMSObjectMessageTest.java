@@ -9,17 +9,19 @@ import javax.jms.*;
 
 import org.junit.*;
 
+import nl.ellipsis.tpjms.core.connection.TPJMSConnectionFactory;
 import nl.ellipsis.tpjms.core.message.TPJMSObjectMessage;
 import nl.ellipsis.tpjms.provider.vm.VmProvider;
 
 public class TPJMSObjectMessageTest {
-	private VmProvider vmProvider;
 	private TPJMSObjectMessage message;
 
 	@Before
 	public void setUp() throws Exception {
-		vmProvider = VmProvider.getInstance();
-		message = new TPJMSObjectMessage(vmProvider.createSession());
+		TPJMSConnectionFactory factory = new TPJMSConnectionFactory();
+		TopicConnection connection = factory.createTopicConnection();
+		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		message = new TPJMSObjectMessage(session);
 	}
 
 	@After
