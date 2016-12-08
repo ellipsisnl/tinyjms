@@ -14,6 +14,10 @@ public class TPJMSObjectMessage extends TPJMSMessage implements ObjectMessage {
 	public TPJMSObjectMessage(Session session) {
 		super(session);
 	}
+	
+	public TPJMSObjectMessage(Session session, Destination destination) {
+		super(session,destination);
+	}
 
 	/**
 	 * Sets the read-only flag for this message.

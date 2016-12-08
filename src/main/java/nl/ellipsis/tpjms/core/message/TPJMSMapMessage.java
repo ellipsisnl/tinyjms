@@ -17,6 +17,10 @@ public class TPJMSMapMessage extends TPJMSMessage implements MapMessage {
 	public TPJMSMapMessage(Session session) throws JMSException {
 		super(session);
 	}
+	
+	public TPJMSMapMessage(Session session, Destination destination) throws JMSException {
+		super(session,destination);
+	}
 
 	@Override
 	byte[] getBody() throws JMSException {

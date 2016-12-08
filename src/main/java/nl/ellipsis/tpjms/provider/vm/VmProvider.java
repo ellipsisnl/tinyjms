@@ -136,6 +136,25 @@ public class VmProvider implements TPJMSProvider {
 		return queue;
 	}
 
+	/**
+	 * Creates a topic identity given a Topic name. This facility is provided
+	 * for the rare cases where clients need to dynamically manipulate topic
+	 * identity. This allows the creation of a topic identity with a
+	 * provider-specific name. Clients that depend on this ability are not
+	 * portable.
+	 * 
+	 * Note that this method is not for creating the physical topic. The
+	 * physical creation of topics is an administrative task and is not to be
+	 * initiated by the JMS API. The one exception is the creation of temporary
+	 * topics, which is accomplished with the createTemporaryTopic method.
+	 * 
+	 * @param topicName
+	 *            - the name of this Topic
+	 * @return a Topic with the given name
+	 * @throws JMSException
+	 *             - if the session fails to create a topic due to some internal error.
+	 * @since 1.1
+	 */
 	@Override
 	public Topic createTopic(String topicName) throws JMSException {
 		Topic topic = getTopic(topicName);
@@ -205,9 +224,7 @@ public class VmProvider implements TPJMSProvider {
 
 	private Queue getQueue(String queueName) throws JMSException {
 		for (Destination destination : destinations) {
-			if (destination instanceof Queue
-					&& ((Queue) destination).getQueueName().equalsIgnoreCase(
-							queueName)) {
+			if (destination instanceof Queue && ((Queue) destination).getQueueName().equalsIgnoreCase(queueName)) {
 				return (Queue) destination;
 			}
 		}

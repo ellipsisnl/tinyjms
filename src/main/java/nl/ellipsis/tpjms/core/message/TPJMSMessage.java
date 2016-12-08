@@ -6,6 +6,7 @@ import java.util.*;
 import javax.jms.*;
 
 import nl.ellipsis.tpjms.core.destination.TPJMSDestination;
+import nl.ellipsis.tpjms.core.session.TPJMSSession;
 import nl.ellipsis.tpjms.util.AcknowledgeCallback;
 
 import org.apache.logging.log4j.*;
@@ -37,9 +38,18 @@ public class TPJMSMessage implements Message {
 	private boolean propertiesReadOnly = false;
 
 	private AcknowledgeCallback acknowledgeCallback;
-
+	
 	public TPJMSMessage(Session session) {
 		this.session = session;
+		if(session instanceof TPJMSSession) {
+			this.destination = ((TPJMSSession) session).getDefaultDestination();
+		}
+		messageID = MESSAGEID_PREFIX + UUID.randomUUID().toString();
+	}
+
+	public TPJMSMessage(Session session, Destination destination) {
+		this.session = session;
+		this.destination = destination;
 		messageID = MESSAGEID_PREFIX + UUID.randomUUID().toString();
 	}
 
@@ -74,13 +84,7 @@ public class TPJMSMessage implements Message {
 	public void acknowledge() throws JMSException {
 		// we need a callback where we send the acknowledge-message to
 		if (acknowledgeCallback != null) {
-			if (destination == null) {
-				acknowledgeCallback.notify(messageID,null);
-			} else if (destination instanceof TPJMSDestination) {
-				acknowledgeCallback.notify(messageID,((TPJMSDestination) destination).getName());
-			} else {
-				acknowledgeCallback.notify(messageID, destination.toString());
-			}
+			acknowledgeCallback.acknowledge(messageID);
 		}
 	}
 

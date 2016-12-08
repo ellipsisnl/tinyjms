@@ -26,7 +26,19 @@ import org.junit.*;
 public class TPJMSSessionTest {
 	private TPJMSConnection con;
 	private TPJMSSession session;
+	private TPJMSQueue queue;
+	private TPJMSTopic topic;
+	
+	private final static String QUEUE_NAME = "test-queue";
+	
+	class MyMessageListener implements MessageListener {
 
+		@Override
+		public void onMessage(Message message) {
+			System.out.println(message.toString());	
+		}
+	}
+	
 	@Before
 	public void setUp() throws Exception {
 		VmProvider.getInstance().removeBroker("test");
@@ -34,6 +46,8 @@ public class TPJMSSessionTest {
 		TPJMSConnectionFactory factory = new TPJMSConnectionFactory("vm://test");
 		con = (TPJMSConnection) factory.createConnection();
 		session = (TPJMSSession) con.createSession(false,Session.AUTO_ACKNOWLEDGE);
+		queue = (TPJMSQueue) session.createQueue(QUEUE_NAME);
+		topic = (TPJMSTopic) session.createTopic("test-topic");
 	}
 
 	@After
@@ -66,13 +80,19 @@ public class TPJMSSessionTest {
 	}
 
 	@Test
-	public void testCreateBrowserQueue() {
-		fail("Not yet implemented");
+	public void testCreateBrowserQueue() throws JMSException {
+		QueueBrowser browser = session.createBrowser(queue);
+		assertNotNull(browser);
+		assertTrue(browser instanceof TPJMSQueueBrowser);
 	}
 
 	@Test
-	public void testCreateBrowserQueueString() {
-		fail("Not yet implemented");
+	public void testCreateBrowserQueueString() throws JMSException {
+		String messageSelector = "a-selector";
+		QueueBrowser browser = session.createBrowser(queue,messageSelector);
+		assertNotNull(browser);
+		assertTrue(browser instanceof TPJMSQueueBrowser);
+		assertEquals(browser.getMessageSelector(),messageSelector);
 	}
 
 	@Test
@@ -83,28 +103,54 @@ public class TPJMSSessionTest {
 	}
 
 	@Test
-	public void testCreateConsumerDestination() {
-		fail("Not yet implemented");
+	public void testCreateConsumerDestination() throws JMSException {
+		MessageConsumer consumer = session.createConsumer(queue);
+		assertNotNull(consumer);
+		assertTrue(consumer instanceof TPJMSMessageConsumer);
 	}
 
 	@Test
-	public void testCreateConsumerDestinationString() {
-		fail("Not yet implemented");
+	public void testCreateConsumerDestinationString() throws JMSException {
+		String messageSelector = "a-selector";
+		MessageConsumer consumer = session.createConsumer(queue,messageSelector);
+		assertNotNull(consumer);
+		assertTrue(consumer instanceof TPJMSMessageConsumer);
+		assertEquals(messageSelector,consumer.getMessageSelector());
 	}
 
 	@Test
-	public void testCreateConsumerDestinationStringBoolean() {
-		fail("Not yet implemented");
+	public void testCreateConsumerDestinationStringBoolean() throws JMSException {
+		String messageSelector = "a-selector";
+		boolean noLocal = false;
+		MessageConsumer consumer = session.createConsumer(queue,messageSelector,noLocal);
+		assertNotNull(consumer);
+		assertTrue(consumer instanceof TPJMSMessageConsumer);
+		assertEquals(messageSelector,consumer.getMessageSelector());
+		assertEquals(noLocal,((TPJMSMessageConsumer)consumer).getNoLocal());
 	}
 
 	@Test
-	public void testCreateDurableSubscriberTopicString() {
-		fail("Not yet implemented");
+	public void testCreateDurableSubscriberTopicString() throws JMSException {
+		String subscriberName = "a-subscriberName";
+		TopicSubscriber subscriber = session.createDurableSubscriber(topic, subscriberName);
+		assertEquals(subscriber.getTopic(),topic);
+		assertNotNull(subscriber);
+		assertTrue(subscriber instanceof TPJMSTopicSubscriber);
+		assertEquals(subscriberName,((TPJMSTopicSubscriber) subscriber).getName());
 	}
 
 	@Test
-	public void testCreateDurableSubscriberTopicStringStringBoolean() {
-		fail("Not yet implemented");
+	public void testCreateDurableSubscriberTopicStringStringBoolean() throws JMSException {
+		String subscriberName = "a-subscriberName";
+		String messageSelector = "a-selector";
+		boolean noLocal = false;
+		TopicSubscriber subscriber = session.createDurableSubscriber(topic,subscriberName,messageSelector,noLocal);
+		assertEquals(subscriber.getTopic(),topic);
+		assertNotNull(subscriber);
+		assertEquals(messageSelector,subscriber.getMessageSelector());
+		assertTrue(subscriber instanceof TPJMSTopicSubscriber);
+		assertEquals(subscriberName,((TPJMSTopicSubscriber) subscriber).getName());
+		assertEquals(noLocal,((TPJMSTopicSubscriber)subscriber).getNoLocal());
 	}
 
 	@Test
@@ -140,7 +186,7 @@ public class TPJMSSessionTest {
 
 	@Test
 	public void testCreateProducer() throws JMSException {
-		Queue queue = session.createQueue("TEST-QUEUE");
+		Queue queue = session.createQueue(QUEUE_NAME);
 		MessageProducer prod = null;
 
 		try {
@@ -169,11 +215,10 @@ public class TPJMSSessionTest {
 
 	@Test
 	public void testCreateQueue() throws JMSException {
-		String queueName = "TEST-QUEUE";
-		Queue queue = session.createQueue(queueName);
+		Queue queue = session.createQueue(QUEUE_NAME);
 		assertNotNull(queue);
 		assertTrue(queue instanceof TPJMSQueue);
-		assertEquals(queueName, queue.getQueueName());
+		assertEquals(QUEUE_NAME, queue.getQueueName());
 	}
 
 	@Test
@@ -244,9 +289,12 @@ public class TPJMSSessionTest {
 		assertEquals(Session.SESSION_TRANSACTED, session.getAcknowledgeMode());
 	}
 
-	@Test
-	public void testGetMessageListener() {
-		fail("Not yet implemented");
+	@Test(expected = UnsupportedOperationException.class)
+	public void testGetMessageListener() throws JMSException {
+		assertNull(session.getMessageListener());
+		MyMessageListener listener = new MyMessageListener();
+		session.setMessageListener(listener);
+		assertEquals(listener, session.getMessageListener());
 	}
 
 	@Test
@@ -273,13 +321,16 @@ public class TPJMSSessionTest {
 		session.run();
 	}
 
-	@Test
-	public void testSetMessageListener() {
-		fail("Not yet implemented");
+	@Test(expected = UnsupportedOperationException.class)
+	public void testSetMessageListener() throws JMSException {
+		assertNull(session.getMessageListener());
+		MyMessageListener listener = new MyMessageListener();
+		session.setMessageListener(listener);
+		assertEquals(listener, session.getMessageListener());
 	}
 
 	@Test
-	public void testUnsubscribe() {
+	public void testUnsubscribe() throws JMSException {
 		fail("Not yet implemented");
 	}
 

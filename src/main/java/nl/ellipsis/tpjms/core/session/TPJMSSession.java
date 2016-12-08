@@ -18,12 +18,14 @@ import nl.ellipsis.tpjms.core.message.TPJMSStreamMessage;
 import nl.ellipsis.tpjms.core.message.TPJMSTextMessage;
 import nl.ellipsis.tpjms.provider.TPJMSProvider;
 
-public class TPJMSSession implements Session, QueueSession, TopicSession {
+public class TPJMSSession implements Session {
 	private static final Logger logger = LogManager.getLogger(TPJMSSession.class);
 
-	private final TPJMSConnection connection;
+	protected final TPJMSConnection connection;
 	private final int acknowledgeMode;
 	private boolean openedConnection = false;
+	
+	private Destination defaultDestination;
 
 	/**
 	 * Creates a new JMS session.
@@ -120,70 +122,225 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public QueueBrowser createBrowser(Queue queue) throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TPJMSQueueBrowser(this,queue);
 	}
 
 	@Override
 	public QueueBrowser createBrowser(Queue queue, String messageSelector) throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TPJMSQueueBrowser(this,queue,messageSelector);
 	}
 
 	@Override
 	public BytesMessage createBytesMessage() throws JMSException {
-		return new TPJMSBytesMessage(this);
+		return new TPJMSBytesMessage(this,defaultDestination);
 	}
 
 	@Override
 	public MessageConsumer createConsumer(Destination destination) throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TPJMSMessageConsumer(this,destination);
 	}
 
 	@Override
 	public MessageConsumer createConsumer(Destination destination, String messageSelector) throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TPJMSMessageConsumer(this,destination,messageSelector);
 	}
 
 	@Override
-	public MessageConsumer createConsumer(Destination destination, String messageSelector, boolean NoLocal)
-			throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+	public MessageConsumer createConsumer(Destination destination, String messageSelector, boolean noLocal)  throws JMSException {
+		return new TPJMSMessageConsumer(this,destination,messageSelector,noLocal);
 	}
+	
+	/**
+	Creates an unshared durable subscription on the specified topic (if one does not already exist), specifying a message selector and the noLocal parameter, and creates a consumer on that durable subscription.
+	A durable subscription is used by an application which needs to receive all the messages published on a topic, including the ones published when there is no active consumer associated with it. The JMS provider retains a record of this durable subscription and ensures that all messages from the topic's publishers are retained until they are delivered to, and acknowledged by, a consumer on this durable subscription or until they have expired.
 
+	A durable subscription will continue to accumulate messages until it is deleted using the unsubscribe method.
+
+	This method may only be used with unshared durable subscriptions. Any durable subscription created using this method will be unshared. This means that only one active (i.e. not closed) consumer on the subscription may exist at a time. The term "consumer" here means a TopicSubscriber, MessageConsumer or JMSConsumer object in any client.
+
+	An unshared durable subscription is identified by a name specified by the client and by the client identifier, which must be set. An application which subsequently wishes to create a consumer on that unshared durable subscription must use the same client identifier.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and the same topic, message selector and noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this method creates a MessageConsumer on the existing durable subscription.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active (i.e. not closed) on the durable subscription, then a JMSException will be thrown.
+
+	If an unshared durable subscription already exists with the same name and client identifier but a different topic, message selector or noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this is equivalent to unsubscribing (deleting) the old one and creating a new one.
+
+	If noLocal is set to true then any messages published to the topic using this session's connection, or any other connection with the same client identifier, will not be added to the durable subscription.
+
+	A shared durable subscription and an unshared durable subscription may not have the same name and client identifier. If a shared durable subscription already exists with the same name and client identifier then a JMSException is thrown.
+
+	There is no restriction on durable subscriptions and shared non-durable subscriptions having the same name and clientId. Such subscriptions would be completely separate.
+
+	This method is identical to the corresponding createDurableSubscriber method except that it returns a MessageConsumer rather than a TopicSubscriber to represent the consumer.
+
+
+	@param topic - the non-temporary Topic to subscribe to
+	@param name - the name used to identify this subscription
+	@param messageSelector - only messages with properties matching the message selector expression are added to the durable subscription. A value of null or an empty string indicates that there is no message selector for the durable subscription.
+	@param noLocal - if true then any messages published to the topic using this session's connection, or any other connection with the same client identifier, will not be added to the durable subscription.
+	
+	@throws InvalidDestinationException - if an invalid topic is specified.
+	@throws InvalidSelectorException - if the message selector is invalid.
+	@throws IllegalStateException - if the client identifier is unset
+	@throws JMSException -
+	if the session fails to create the unshared durable subscription and MessageConsumer due to some internal error
+	if an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active
+	if a shared durable subscription already exists with the same name and client identifier
+	
+	@since JMS 2.0
+	MessageConsumer createDurableConsumer(Topic topic,
+            String name,
+            String messageSelector,
+            boolean noLocal)
+     throws JMSException {
+		return null;
+	}
+	*/
+
+	/**
+	Creates an unshared durable subscription on the specified topic (if one does not already exist) and creates a consumer on that durable subscription. This method creates the durable subscription without a message selector and with a noLocal value of false.
+	A durable subscription is used by an application which needs to receive all the messages published on a topic, including the ones published when there is no active consumer associated with it. The JMS provider retains a record of this durable subscription and ensures that all messages from the topic's publishers are retained until they are delivered to, and acknowledged by, a consumer on this durable subscription or until they have expired.
+
+	A durable subscription will continue to accumulate messages until it is deleted using the unsubscribe method.
+
+	This method may only be used with unshared durable subscriptions. Any durable subscription created using this method will be unshared. This means that only one active (i.e. not closed) consumer on the subscription may exist at a time. The term "consumer" here means a TopicSubscriber, MessageConsumer or JMSConsumer object in any client.
+
+	An unshared durable subscription is identified by a name specified by the client and by the client identifier, which must be set. An application which subsequently wishes to create a consumer on that unshared durable subscription must use the same client identifier.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and the same topic, message selector and noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this method creates a MessageConsumer on the existing durable subscription.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active (i.e. not closed) on the durable subscription, then a JMSException will be thrown.
+
+	If an unshared durable subscription already exists with the same name and client identifier but a different topic, message selector or noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this is equivalent to unsubscribing (deleting) the old one and creating a new one.
+
+	A shared durable subscription and an unshared durable subscription may not have the same name and client identifier. If a shared durable subscription already exists with the same name and client identifier then a JMSException is thrown.
+
+	There is no restriction on durable subscriptions and shared non-durable subscriptions having the same name and clientId. Such subscriptions would be completely separate.
+
+	This method is identical to the corresponding createDurableSubscriber method except that it returns a MessageConsumer rather than a TopicSubscriber to represent the consumer.
+
+
+	@param topic - the non-temporary Topic to subscribe to
+	@param name - the name used to identify this subscription
+	
+	@throws InvalidDestinationException - if an invalid topic is specified.
+	@throws IllegalStateException - if the client identifier is unset
+	@throws JMSException -
+	if the session fails to create the unshared durable subscription and MessageConsumer due to some internal error
+	if an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active
+	if a shared durable subscription already exists with the same name and client identifier
+	
+	@since JMS 2.0
+	MessageConsumer createDurableConsumer(Topic topic,
+                                      String name)
+                               throws JMSException {
+    	return null;
+    }                           
+	*/
+	
+	/**
+	Creates an unshared durable subscription on the specified topic (if one does not already exist) and creates a consumer on that durable subscription. This method creates the durable subscription without a message selector and with a noLocal value of false.
+	A durable subscription is used by an application which needs to receive all the messages published on a topic, including the ones published when there is no active consumer associated with it. The JMS provider retains a record of this durable subscription and ensures that all messages from the topic's publishers are retained until they are delivered to, and acknowledged by, a consumer on this durable subscription or until they have expired.
+
+	A durable subscription will continue to accumulate messages until it is deleted using the unsubscribe method.
+
+	This method may only be used with unshared durable subscriptions. Any durable subscription created using this method will be unshared. This means that only one active (i.e. not closed) consumer on the subscription may exist at a time. The term "consumer" here means a TopicSubscriber, MessageConsumer or JMSConsumer object in any client.
+
+	An unshared durable subscription is identified by a name specified by the client and by the client identifier, which must be set. An application which subsequently wishes to create a consumer on that unshared durable subscription must use the same client identifier.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and the same topic, message selector and noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this method creates a TopicSubscriber on the existing durable subscription.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active (i.e. not closed) on the durable subscription, then a JMSException will be thrown.
+
+	If an unshared durable subscription already exists with the same name and client identifier but a different topic, message selector or noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this is equivalent to unsubscribing (deleting) the old one and creating a new one.
+
+	A shared durable subscription and an unshared durable subscription may not have the same name and client identifier. If a shared durable subscription already exists with the same name and client identifier then a JMSException is thrown.
+
+	There is no restriction on durable subscriptions and shared non-durable subscriptions having the same name and clientId. Such subscriptions would be completely separate.
+
+	This method is identical to the corresponding createDurableConsumer method except that it returns a TopicSubscriber rather than a MessageConsumer to represent the consumer.
+
+	@param topic - the non-temporary Topic to subscribe to
+	@param name - the name used to identify this subscription
+	
+	@throws InvalidDestinationException - if an invalid topic is specified.
+	@throws IllegalStateException - if the client identifier is unset
+	@throws JMSException -
+	if the session fails to create the unshared durable subscription and TopicSubscriber due to some internal error
+	if an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active
+	if a shared durable subscription already exists with the same name and client identifier
+	
+	@since JMS 1.1
+	*/
 	@Override
 	public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TPJMSTopicSubscriber(this,topic,name);
 	}
 
+	/**
+	Creates an unshared durable subscription on the specified topic (if one does not already exist), specifying a message selector and the noLocal parameter, and creates a consumer on that durable subscription.
+	A durable subscription is used by an application which needs to receive all the messages published on a topic, including the ones published when there is no active consumer associated with it. The JMS provider retains a record of this durable subscription and ensures that all messages from the topic's publishers are retained until they are delivered to, and acknowledged by, a consumer on this durable subscription or until they have expired.
+
+	A durable subscription will continue to accumulate messages until it is deleted using the unsubscribe method.
+
+	This method may only be used with unshared durable subscriptions. Any durable subscription created using this method will be unshared. This means that only one active (i.e. not closed) consumer on the subscription may exist at a time. The term "consumer" here means a TopicSubscriber, MessageConsumer or JMSConsumer object in any client.
+
+	An unshared durable subscription is identified by a name specified by the client and by the client identifier, which must be set. An application which subsequently wishes to create a consumer on that unshared durable subscription must use the same client identifier.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and the same topic, message selector and noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this method creates a TopicSubscriber on the existing durable subscription.
+
+	If an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active (i.e. not closed) on the durable subscription, then a JMSException will be thrown.
+
+	If an unshared durable subscription already exists with the same name and client identifier but a different topic, message selector or noLocal value has been specified, and there is no consumer already active (i.e. not closed) on the durable subscription then this is equivalent to unsubscribing (deleting) the old one and creating a new one.
+
+	If noLocal is set to true then any messages published to the topic using this session's connection, or any other connection with the same client identifier, will not be added to the durable subscription.
+
+	A shared durable subscription and an unshared durable subscription may not have the same name and client identifier. If a shared durable subscription already exists with the same name and client identifier then a JMSException is thrown.
+
+	There is no restriction on durable subscriptions and shared non-durable subscriptions having the same name and clientId. Such subscriptions would be completely separate.
+
+	This method is identical to the corresponding createDurableConsumer method except that it returns a TopicSubscriber rather than a MessageConsumer to represent the consumer.
+
+
+	@param topic - the non-temporary Topic to subscribe to
+	@param name - the name used to identify this subscription
+	@param messageSelector - only messages with properties matching the message selector expression are added to the durable subscription. A value of null or an empty string indicates that there is no message selector for the durable subscription.
+	@param noLocal - if true then any messages published to the topic using this session's connection, or any other connection with the same client identifier, will not be added to the durable subscription.
+	
+	@throws InvalidDestinationException - if an invalid topic is specified.
+	@throws InvalidSelectorException - if the message selector is invalid.
+	@throws IllegalStateException - if the client identifier is unset
+	@throws JMSException -
+	if the session fails to create the unshared durable subscription and TopicSubscriber due to some internal error
+	if an unshared durable subscription already exists with the same name and client identifier, and there is a consumer already active
+	if a shared durable subscription already exists with the same name and client identifier
+	
+	@since JMS 1.1
+	*/
 	@Override
 	public TopicSubscriber createDurableSubscriber(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new TPJMSTopicSubscriber(this,topic,name,messageSelector,noLocal);
 	}
-
+	
 	@Override
 	public MapMessage createMapMessage() throws JMSException {
-		return new TPJMSMapMessage(this);
+		return new TPJMSMapMessage(this,defaultDestination);
 	}
 
 	@Override
 	public Message createMessage() throws JMSException {
-		return new TPJMSMessage(this);
+		return new TPJMSMessage(this,defaultDestination);
 	}
 
 	@Override
 	public ObjectMessage createObjectMessage() throws JMSException {
-		return new TPJMSObjectMessage(this);
+		return new TPJMSObjectMessage(this,defaultDestination);
 	}
 
 	@Override
 	public ObjectMessage createObjectMessage(Serializable object) throws JMSException {
-		ObjectMessage objectMessage = new TPJMSObjectMessage(this);
+		ObjectMessage objectMessage = new TPJMSObjectMessage(this,defaultDestination);
 		objectMessage.setObject(object);
 		return objectMessage;
 	}
@@ -249,7 +406,7 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public StreamMessage createStreamMessage() throws JMSException {
-		return new TPJMSStreamMessage(this);
+		return new TPJMSStreamMessage(this,defaultDestination);
 	}
 
 	@Override
@@ -257,7 +414,7 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 		java.util.UUID uuid = UUID.randomUUID();
 		return new TPJMSTemporaryQueue(uuid.toString());
 	}
-
+	
 	@Override
 	public TemporaryTopic createTemporaryTopic() throws JMSException {
 		java.util.UUID uuid = UUID.randomUUID();
@@ -266,12 +423,12 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 
 	@Override
 	public TextMessage createTextMessage() throws JMSException {
-		return new TPJMSTextMessage(this);
+		return new TPJMSTextMessage(this,defaultDestination);
 	}
 
 	@Override
 	public TextMessage createTextMessage(String text) throws JMSException {
-		return new TPJMSTextMessage(this,text);
+		return new TPJMSTextMessage(this,defaultDestination,text);
 	}
 
 	/**
@@ -321,6 +478,16 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 		return acknowledgeMode;
 	}
 
+	/**
+	 * Returns the session's distinguished message listener (optional).
+	 * 
+	 * @returns the message listener associated with this session
+	 * @throws JMSException
+	 *             - if the JMS provider fails to get the message listener due to an internal error.
+	 * @see setMessageListener(javax.jms.MessageListener)
+	 * @see ServerSessionPool
+	 * @see ServerSession
+	 */
 	@Override
 	public MessageListener getMessageListener() throws JMSException {
 		// TODO Auto-generated method stub
@@ -354,62 +521,70 @@ public class TPJMSSession implements Session, QueueSession, TopicSession {
 		logger.warn("run() not implemented");
 	}
 
+	/**
+	 * Sets the session's distinguished message listener (optional). When the
+	 * distinguished message listener is set, no other form of message receipt
+	 * in the session can be used; however, all forms of sending messages are
+	 * still supported.
+	 * 
+	 * This is an expert facility not used by regular JMS clients.
+	 * 
+	 * @param listener
+	 *            - the message listener to associate with this session
+	 * @throws JMSException
+	 *             - if the JMS provider fails to set the message listener due to an internal error.
+	 * @see getMessageListener(), ServerSessionPool, ServerSession
+	 */
 	@Override
 	public void setMessageListener(MessageListener listener) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Unsubscribes a durable subscription that has been created by a client.
+	 * This method deletes the state being maintained on behalf of the
+	 * subscriber by its provider.
+	 * 
+	 * It is erroneous for a client to delete a durable subscription while there
+	 * is an active MessageConsumer or TopicSubscriber for the subscription, or
+	 * while a consumed message is part of a pending transaction or has not been
+	 * acknowledged in the session.
+	 * 
+	 * @param name
+	 *            - the name used to identify this subscription
+	 * @throws JMSException
+	 *             - if the session fails to unsubscribe to the durable
+	 *             subscription due to some internal error.
+	 * @throws InvalidDestinationException
+	 *             - if an invalid subscription name is specified.
+	 * @since 1.1
+	 */
 	@Override
 	public void unsubscribe(String name) throws JMSException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public TopicPublisher createPublisher(Topic topic) throws JMSException {
-		return new TPJMSTopicPublisher(this,topic);
-	}
-
-	@Override
-	public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal) throws JMSException {
-		TPJMSTopicSubscriber topicSubscriber = new TPJMSTopicSubscriber(topic, messageSelector, noLocal);
-		connection.getProvider().registerMessageConsumer(topic,topicSubscriber);
-		return topicSubscriber;
-	}
-
-	@Override
-	public TopicSubscriber createSubscriber(Topic topic) throws JMSException {
-		return createSubscriber(topic, null, true);
-	}
-
-	@Override
-	public QueueReceiver createReceiver(Queue queue, String messageSelector) throws JMSException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public QueueReceiver createReceiver(Queue queue) throws JMSException {
-		return createReceiver(queue, null);
-	}
-
-	@Override
-	public QueueSender createSender(Queue queue) throws JMSException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
-	
 	///// INTERNAL
 	public TPJMSConnection getConnection() {
-		return connection;
+		return this.connection;
 	}
 	
+	public Destination getDefaultDestination() {
+		return this.defaultDestination;
+	}
+
 	public TPJMSProvider getProvider() {
 		return connection.getProvider();
 	}
 	
 	public boolean isOpen() {
 		return this.openedConnection;
+	}
+	
+	public void setDefaultDestination(Destination destination) {
+		this.defaultDestination = destination;
 	}
 	
 

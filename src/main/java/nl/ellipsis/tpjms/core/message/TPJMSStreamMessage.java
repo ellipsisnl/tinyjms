@@ -20,9 +20,13 @@ public class TPJMSStreamMessage extends TPJMSMessage implements StreamMessage {
 	private byte[] data;
 	private byte[] byteField;
 	private int byteFieldPos = 0;
-
+	
 	public TPJMSStreamMessage(Session session) throws JMSException {
 		super(session);
+		clearBody();
+	}
+	public TPJMSStreamMessage(Session session, Destination destination) throws JMSException {
+		super(session,destination);
 		clearBody();
 	}
 

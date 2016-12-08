@@ -10,14 +10,24 @@ import javax.jms.*;
 public class TPJMSTextMessage extends TPJMSMessage implements TextMessage {
 	private String text;
 	private boolean readOnly = false;
-
+	
 	public TPJMSTextMessage(Session session) {
 		super(session);
 		text = null;
 	}
 
+	public TPJMSTextMessage(Session session, Destination destination) {
+		super(session,destination);
+		text = null;
+	}
+	
 	public TPJMSTextMessage(Session session, String text) {
 		super(session);
+		this.text = text;
+	}
+
+	public TPJMSTextMessage(Session session, Destination destination, String text) {
+		super(session,destination);
 		this.text = text;
 	}
 

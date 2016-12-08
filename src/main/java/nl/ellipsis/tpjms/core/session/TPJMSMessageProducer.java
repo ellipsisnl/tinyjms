@@ -1,8 +1,10 @@
 package nl.ellipsis.tpjms.core.session;
 
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.*;
+
 import org.apache.logging.log4j.*;
 
 import nl.ellipsis.tpjms.core.connection.TPJMSConnection;
@@ -67,6 +69,11 @@ public class TPJMSMessageProducer implements MessageProducer {
 	 * Destination
 	 */
 	private final Destination defaultDestination;
+	
+	/**
+	 * producerId
+	 */
+	private final String producerId;
 
 	/**
 	 * Connection
@@ -76,6 +83,17 @@ public class TPJMSMessageProducer implements MessageProducer {
 	TPJMSMessageProducer(TPJMSSession session, Destination destination) throws JMSException {
 		this.session = session;
 		this.defaultDestination = destination;
+		this.producerId = "ID:"+UUID.randomUUID().toString();
+
+		if (destination != null) {
+			validateDestination(destination);
+		}
+	}
+
+	TPJMSMessageProducer(TPJMSSession session, Destination destination, String producerId) throws JMSException {
+		this.session = session;
+		this.defaultDestination = destination;
+		this.producerId = producerId;
 
 		if (destination != null) {
 			validateDestination(destination);
@@ -149,6 +167,8 @@ public class TPJMSMessageProducer implements MessageProducer {
 		return false;
 	}
 
+	
+	
 	/**
 	 * Gets the producer's default priority.
 	 * 
@@ -460,7 +480,13 @@ public class TPJMSMessageProducer implements MessageProducer {
 			configLock.writeLock().unlock();
 		}
 	}
-
+	
+	//// INTERNAL
+	
+	public String getJMSMessageProducerID() {
+		return this.producerId;
+	}
+	
 	private void sendInternal(Destination destination, Message message, int deliveryMode, int priority, long timeToLive)
 			throws JMSException {
 		validateDestination(destination);

@@ -45,17 +45,34 @@ import javax.jms.Topic;
  */
 public class TPJMSMessageConsumer implements MessageConsumer {
 	private String messageConsumerId;
-	private Destination destination;
-	private String messageSelector;
+	private final Destination destination;
+	private final String messageSelector;
 	private MessageListener messageListener;
+	
+	private boolean noLocal = true;
+	
+	/**
+	 * Connection
+	 */
+	private final TPJMSSession session;
 
-    public TPJMSMessageConsumer(Destination destination) throws JMSException {
+    public TPJMSMessageConsumer(TPJMSSession session, Destination destination) throws JMSException {
+    	this.session = session;
 		this.destination = destination;
+		this.messageSelector = null;
 	}
 
-	public TPJMSMessageConsumer(Destination destination, String messageSelector) throws JMSException {
+	public TPJMSMessageConsumer(TPJMSSession session, Destination destination, String messageSelector) throws JMSException {
+	   	this.session = session;
 		this.destination = destination;
 		this.messageSelector = messageSelector;
+	}
+
+	public TPJMSMessageConsumer(TPJMSSession session, Destination destination, String messageSelector, boolean noLocal) throws JMSException {
+	   	this.session = session;
+		this.destination = destination;
+		this.messageSelector = messageSelector;
+		this.noLocal = noLocal;
 	}
 
 	/**
@@ -186,6 +203,14 @@ public class TPJMSMessageConsumer implements MessageConsumer {
 
 	protected Destination getDestination() {
 		return destination;
+	}
+	
+	public String getJMSMessageConsumerID() {
+		return messageConsumerId;
+	}
+	
+	public boolean getNoLocal() throws JMSException {
+		return noLocal;
 	}
 	
 }

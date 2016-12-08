@@ -6,6 +6,7 @@ import javax.jms.*;
 
 import nl.ellipsis.tpjms.core.connection.TPJMSConnection;
 import nl.ellipsis.tpjms.core.connection.TPJMSConnectionFactory;
+import nl.ellipsis.tpjms.core.destination.TPJMSDestination;
 import nl.ellipsis.tpjms.core.destination.TPJMSQueue;
 import nl.ellipsis.tpjms.core.message.TPJMSTextMessage;
 import nl.ellipsis.tpjms.core.session.TPJMSMessageProducer;
@@ -22,35 +23,37 @@ public class TPJMSMessageProducerTest {
 	private TPJMSMessageProducer prod;
 	private TPJMSTextMessage message;
 	
+	private final static String QUEUE_NAME = "test-queue";
+	
 	private class AcknowledgeCallbackImpl implements AcknowledgeCallback {
 		private boolean acknowledged = false;
-		private String destinationName = null;
-		private String messageId = null;
+		private MessageProducer producer;
+		
+		public AcknowledgeCallbackImpl(MessageProducer producer) {
+			this.producer = producer;
+			this.acknowledged = true;
+		}
 		
 		@Override
-		public void notify(String messageId, String destinationName) throws JMSException {
-			System.out.println("Message "+messageId+" arrived at destination "+destinationName);
+		public void acknowledge(String messageID) throws JMSException {
+			String producerID = null;
+			String destinationID = null;
+			if (producer!=null && producer instanceof TPJMSMessageProducer) {
+				TPJMSMessageProducer jmsProducer = (TPJMSMessageProducer) producer;
+				producerID = jmsProducer.getJMSMessageProducerID();
+				Destination destination = jmsProducer.getDestination();
+				destinationID = (destination instanceof TPJMSDestination ? ((TPJMSDestination) destination).getName() : null);
+			}
+			System.out.println("Message "+messageID+" from producer "+producerID+" arrived at destination "+destinationID);
 			this.acknowledged = true;
-			this.destinationName = destinationName;
-			this.messageId = messageId;
 		}
 		
 		public boolean isAcknowledged() {
 			return acknowledged;
 		}
 		
-		public String getDestinationName() {
-			return destinationName;
-		}
-		
-		public String getMessageId() {
-			return messageId;
-		}
-		
 		public void clear() {
 			this.acknowledged = false;
-			this.destinationName = null;
-			this.messageId = null;
 		}
 	}
 	
@@ -63,11 +66,11 @@ public class TPJMSMessageProducerTest {
 		TPJMSConnectionFactory factory = new TPJMSConnectionFactory("vm://test");
 		con = (TPJMSConnection) factory.createConnection();
 		session = (TPJMSSession) con.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		queue = (TPJMSQueue) session.createQueue("test-queue");
+		queue = (TPJMSQueue) session.createQueue(QUEUE_NAME);
 		prod = (TPJMSMessageProducer) session.createProducer(queue);
 		message = (TPJMSTextMessage) session.createTextMessage("BODY");
 		
-		acknowledgeCallback = new AcknowledgeCallbackImpl();
+		acknowledgeCallback = new AcknowledgeCallbackImpl(prod);
 		message.setAcknowledgeCallback(acknowledgeCallback);
 	}
 

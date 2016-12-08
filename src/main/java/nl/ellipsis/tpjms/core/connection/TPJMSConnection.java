@@ -8,7 +8,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.jms.*;
 import javax.jms.IllegalStateException;
 
+import nl.ellipsis.tpjms.core.session.TPJMSQueueSession;
 import nl.ellipsis.tpjms.core.session.TPJMSSession;
+import nl.ellipsis.tpjms.core.session.TPJMSTopicSession;
 import nl.ellipsis.tpjms.provider.*;
 
 /**
@@ -275,7 +277,9 @@ public class TPJMSConnection implements Connection, QueueConnection, TopicConnec
 	 */
 	@Override
 	public TopicSession createTopicSession(boolean transacted, int acknowledgeMode) throws JMSException {
-		return (TopicSession) createSession(transacted, acknowledgeMode);
+		TopicSession session = new TPJMSTopicSession(this, transacted, acknowledgeMode);
+		registerSession(session);
+		return session;
 	}
 
 	/*
@@ -296,7 +300,9 @@ public class TPJMSConnection implements Connection, QueueConnection, TopicConnec
 	 */
 	@Override
 	public QueueSession createQueueSession(boolean transacted, int acknowledgeMode) throws JMSException {
-		return (QueueSession) createSession(transacted, acknowledgeMode);
+		QueueSession session = new TPJMSQueueSession(this, transacted, acknowledgeMode);
+		registerSession(session);
+		return session;
 	}
 
 	// TPJMS specific

@@ -20,6 +20,11 @@ public class TPJMSBytesMessage extends TPJMSMessage implements BytesMessage {
 		super(session);
 		clearBody();
 	}
+	
+	public TPJMSBytesMessage(Session session, Destination destination) throws JMSException {
+		super(session,destination);
+		clearBody();
+	}
 
 	@Override
 	byte[] getBody() throws JMSException {

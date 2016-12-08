@@ -9,8 +9,8 @@ import nl.ellipsis.tpjms.core.connection.TPJMSConnection;
 
 public class TPJMSQueueSender extends TPJMSMessageProducer implements QueueSender {
 
-	public TPJMSQueueSender(TPJMSSession session, Queue queue) throws JMSException {
-		super(session,queue);
+	public TPJMSQueueSender(TPJMSSession session, Queue queue, String senderId) throws JMSException {
+		super(session,queue,senderId);
 	}
 
 	public Queue getQueue() throws JMSException {

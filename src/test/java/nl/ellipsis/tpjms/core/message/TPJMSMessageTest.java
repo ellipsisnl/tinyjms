@@ -10,8 +10,10 @@ import javax.jms.*;
 import org.junit.*;
 
 import nl.ellipsis.tpjms.core.connection.TPJMSConnectionFactory;
+import nl.ellipsis.tpjms.core.destination.TPJMSDestination;
 import nl.ellipsis.tpjms.core.destination.TPJMSQueue;
 import nl.ellipsis.tpjms.core.message.TPJMSMessage;
+import nl.ellipsis.tpjms.core.session.TPJMSMessageProducer;
 import nl.ellipsis.tpjms.provider.vm.VmProvider;
 import nl.ellipsis.tpjms.util.AcknowledgeCallback;
 
@@ -20,9 +22,24 @@ public class TPJMSMessageTest {
 	
 	private class AcknowledgeCallbackImpl implements AcknowledgeCallback {
 		private boolean acknowledged = false;
+		private MessageProducer producer;
+		
+		public AcknowledgeCallbackImpl(MessageProducer producer) {
+			this.producer = producer;
+		}
+		
 		@Override
-		public void notify(String messageId, String destinationName) throws JMSException {
-			System.out.println("Message "+messageId+" arrived at destination "+destinationName);
+//		public void notify(String messageId, String destinationName) throws JMSException {
+		public void acknowledge(String messageID) throws JMSException {
+			String producerID = null;
+			String destinationID = null;
+			if (producer!=null && producer instanceof TPJMSMessageProducer) {
+				TPJMSMessageProducer jmsProducer = (TPJMSMessageProducer) producer;
+				producerID = jmsProducer.getJMSMessageProducerID();
+				Destination destination = jmsProducer.getDestination();
+				destinationID = (destination instanceof TPJMSDestination ? ((TPJMSDestination) destination).getName() : null);
+			}
+			System.out.println("Message "+messageID+" from producer "+producerID+" arrived at destination "+destinationID);
 			acknowledged = true;
 		}
 		
@@ -43,7 +60,7 @@ public class TPJMSMessageTest {
 		TopicConnection connection = factory.createTopicConnection();
 		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		message = new TPJMSMessage(session);
-		acknowledgeCallback = new AcknowledgeCallbackImpl();
+		acknowledgeCallback = new AcknowledgeCallbackImpl(null);
 		message.setAcknowledgeCallback(acknowledgeCallback);
 	}
 
@@ -222,6 +239,9 @@ public class TPJMSMessageTest {
 		TPJMSQueue queue = new TPJMSQueue("TEST");
 		message.setJMSDestination(queue);
 		assertSame(queue, message.getJMSDestination());
+		acknowledgeCallback.clear();
+		message.acknowledge();
+		assertTrue(acknowledgeCallback.isAcknowledged());
 		message.setJMSDestination(null);
 		assertNull(message.getJMSDestination());
 	}
